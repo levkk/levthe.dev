@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Lev&#39;s blog</title>
+    <link>https://levthe.dev/</link>
+    <description>Recent content on Lev&#39;s blog</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 24 Jun 2024 22:52:43 -0700</lastBuildDate>
+    <atom:link href="https://levthe.dev/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>My First Post</title>
+      <link>https://levthe.dev/posts/my-first-post/</link>
+      <pubDate>Mon, 24 Jun 2024 22:52:43 -0700</pubDate>
+      <guid>https://levthe.dev/posts/my-first-post/</guid>
+      <description>Introduction This is bold text, and this is emphasized text.&#xA;Visit the Hugo website!&#xA;let v = vec![1, 2, 3]; var x = 42; </description>
+    </item>
+  </channel>
+</rss>
