@@ -6,14 +6,14 @@
     <description>Recent content in Blogs on Lev&#39;s blog</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 24 Jun 2024 22:52:43 -0700</lastBuildDate>
+    <lastBuildDate>Wed, 03 Jul 2024 13:33:45 -0400</lastBuildDate>
     <atom:link href="http://localhost:1313/blog/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>My First Post</title>
       <link>http://localhost:1313/blog/my-first-post/</link>
-      <pubDate>Mon, 24 Jun 2024 22:52:43 -0700</pubDate>
+      <pubDate>Wed, 03 Jul 2024 13:33:45 -0400</pubDate>
       <guid>http://localhost:1313/blog/my-first-post/</guid>
-      <description>Introduction This is bold text, and this is emphasized text.&#xA;Visit the Hugo website!&#xA;let v = vec![1, 2, 3]; var x = 42; </description>
+      <description>Well, this is awkward, I have never written a personal blog before. I guess hi, thanks for making it over here, and nice to meet you.&#xA;I am an software engineer, I live in San Francisco and I have an adorable 5 month old puppy I take care of full time. I also have a day job, which often stretches into the evening hours.&#xA;You&amp;rsquo;ve read this far, so here is a picture of her passed out in front of my house:</description>
     </item>
   </channel>
 </rss>
