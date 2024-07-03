@@ -7,7 +7,7 @@ Well, this is awkward, I have never written a personal blog before. I guess hi, 
 
 I am an software engineer, I live in San Francisco and I have an adorable 5 month old puppy I take care of full time. I also have a day job, which often stretches into the evening hours.
 
-You've read this far, so here is a picture of her passed out in front of my house:
+You read this far, so here is a picture of her passed out in front of my house:
 
 ![puppy](puppy-sleeping.jpeg)
 
@@ -19,5 +19,5 @@ Things I might write about in the future:
 - My job
 - Random engineering projects
 
-Cheers!
+Cheers.
 
