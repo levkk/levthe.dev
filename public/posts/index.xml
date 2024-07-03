@@ -1,28 +1,35 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
     <channel>
         <title>Posts on Lev&#39;s blog</title>
-        <link>http://localhost:1313/posts/</link>
+        <link>https://levthe.dev/posts/</link>
         <description>Recent content in Posts on Lev&#39;s blog</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>en-us</language>
-        <lastBuildDate>Mon, 24 Jun 2024 22:52:43 -0700</lastBuildDate>
-        <atom:link href="http://localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
+        <lastBuildDate>Wed, 03 Jul 2024 13:33:45 -0400</lastBuildDate>
+        <atom:link href="https://levthe.dev/posts/index.xml" rel="self" type="application/rss+xml" />
         
         <item>
-            <title>My First Post</title>
-            <link>http://localhost:1313/posts/my-first-post/</link>
-            <pubDate>Mon, 24 Jun 2024 22:52:43 -0700</pubDate>
+            <title>My first post</title>
+            <link>https://levthe.dev/posts/my-first-post/</link>
+            <pubDate>Wed, 03 Jul 2024 13:33:45 -0400</pubDate>
             
-            <guid>http://localhost:1313/posts/my-first-post/</guid>
-            <description>Introduction This is bold text, and this is emphasized text.
-Visit the Hugo website!
-let v = vec![1, 2, 3]; var x = 42; </description>
-            <content type="html"><![CDATA[<h2 id="introduction">Introduction</h2>
-<p>This is <strong>bold</strong> text, and this is <em>emphasized</em> text.</p>
-<p>Visit the <a href="https://gohugo.io">Hugo</a> website!</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">let</span> v <span style="color:#f92672">=</span> vec![<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">3</span>];
-</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-javascript" data-lang="javascript"><span style="display:flex;"><span><span style="color:#66d9ef">var</span> <span style="color:#a6e22e">x</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">42</span>;
-</span></span></code></pre></div>]]></content>
+            <guid>https://levthe.dev/posts/my-first-post/</guid>
+            <description>Well, this is awkward, I have never written a personal blog before. I guess hi, thanks for making it over here, and nice to meet you.
+I am an software engineer, I live in San Francisco and I have an adorable 5 month old puppy I take care of full time. I also have a day job, which often stretches into the evening hours.
+You&amp;rsquo;ve read this far, so here is a picture of her passed out in front of my house:</description>
+            <content type="html"><![CDATA[<p>Well, this is awkward, I have never written a personal blog before. I guess hi, thanks for making it over here, and nice to meet you.</p>
+<p>I am an software engineer, I live in San Francisco and I have an adorable 5 month old puppy I take care of full time. I also have a day job, which often stretches into the evening hours.</p>
+<p>You&rsquo;ve read this far, so here is a picture of her passed out in front of my house:</p>
+<p><img src="puppy-sleeping.jpeg" alt="puppy"></p>
+<p>She was too tired to make it up 35 steps, so I let her take a quick nap.</p>
+<p>Things I might write about in the future:</p>
+<ul>
+<li>My dog</li>
+<li>My job</li>
+<li>Random engineering projects</li>
+</ul>
+<p>Cheers!</p>
+]]></content>
         </item>
         
     </channel>
