@@ -2,17 +2,24 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Lev&#39;s blog</title>
-    <link>https://levthe.dev/</link>
+    <link>http://localhost:1313/</link>
     <description>Recent content on Lev&#39;s blog</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 03 Jul 2024 13:33:45 -0400</lastBuildDate>
-    <atom:link href="https://levthe.dev/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 01 Aug 2024 13:33:45 -0400</lastBuildDate>
+    <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Build your own language interpreter from scratch</title>
+      <link>http://localhost:1313/posts/yet-another-language-tutorial/</link>
+      <pubDate>Thu, 01 Aug 2024 13:33:45 -0400</pubDate>
+      <guid>http://localhost:1313/posts/yet-another-language-tutorial/</guid>
+      <description>Creating your own programming language is not hard. In fact, once you understand the basic building blocks, it can even be fun.&#xA;All programming languages, from the simplest one like Python to the incomprehensible one like C++, are built using three independent components: a lexer, a parser, and an translator.&#xA;In this post, we will cover all three of them, implement them in the Internet&amp;rsquo;s favorite language du jour, Rust, and run a program written in our own language.</description>
+    </item>
     <item>
       <title>My first post</title>
-      <link>https://levthe.dev/posts/my-first-post/</link>
+      <link>http://localhost:1313/posts/my-first-post/</link>
       <pubDate>Wed, 03 Jul 2024 13:33:45 -0400</pubDate>
-      <guid>https://levthe.dev/posts/my-first-post/</guid>
+      <guid>http://localhost:1313/posts/my-first-post/</guid>
       <description>Well, this is awkward, I have never written a personal blog before. I guess hi, thanks for making it over here, and nice to meet you.&#xA;I am an software engineer, I live in San Francisco and I have an adorable 5 month old puppy I take care of full time. I also have a day job, which often stretches into the evening hours.&#xA;You read this far, so here is a picture of her passed out in front of my house:</description>
     </item>
   </channel>

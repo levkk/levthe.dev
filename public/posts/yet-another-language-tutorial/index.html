@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="author" content="">
+<meta name="description" content="Creating your own programming language is not hard. In fact, once you understand the basic building blocks, it can even be fun.
+All programming languages, from the simplest one like Python to the incomprehensible one like C&#43;&#43;, are built using three independent components: a lexer, a parser, and an translator.
+In this post, we will cover all three of them, implement them in the Internet&amp;rsquo;s favorite language du jour, Rust, and run a program written in our own language." />
+<meta name="keywords" content="" />
+<meta name="robots" content="noodp" />
+<meta name="theme-color" content="" />
+<link rel="canonical" href="http://localhost:1313/posts/yet-another-language-tutorial/" />
+
+
+    <title>
+        
+            Build your own language interpreter from scratch :: Lev&#39;s blog 
+        
+    </title>
+
+
+
+
+
+<link rel="stylesheet" href="/main.949191c1dcc9c4a887997048b240354e47152016d821198f89448496ba42e491.css" integrity="sha256-lJGRwdzJxKiHmXBIskA1TkcVIBbYIRmPiUSElrpC5JE=">
+
+
+
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <meta name="msapplication-TileColor" content="">
+
+
+
+  <meta itemprop="name" content="Build your own language interpreter from scratch">
+  <meta itemprop="description" content="Creating your own programming language is not hard. In fact, once you understand the basic building blocks, it can even be fun.
+All programming languages, from the simplest one like Python to the incomprehensible one like C&#43;&#43;, are built using three independent components: a lexer, a parser, and an translator.
+In this post, we will cover all three of them, implement them in the Internet’s favorite language du jour, Rust, and run a program written in our own language.">
+  <meta itemprop="datePublished" content="2024-08-01T13:33:45-04:00">
+  <meta itemprop="dateModified" content="2024-08-01T13:33:45-04:00">
+  <meta itemprop="wordCount" content="1839">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Build your own language interpreter from scratch">
+  <meta name="twitter:description" content="Creating your own programming language is not hard. In fact, once you understand the basic building blocks, it can even be fun.
+All programming languages, from the simplest one like Python to the incomprehensible one like C&#43;&#43;, are built using three independent components: a lexer, a parser, and an translator.
+In this post, we will cover all three of them, implement them in the Internet’s favorite language du jour, Rust, and run a program written in our own language.">
+
+
+
+
+
+
+
+    <meta property="article:published_time" content="2024-08-01 13:33:45 -0400 -0400" />
+
+
+
+
+
+
+
+
+
+
+
+    </head>
+
+    
+        <body>
+    
+    
+        <div class="container">
+            <header class="header">
+    <span class="header__inner">
+        <a href="/" style="text-decoration: none;">
+    <div class="logo">
+        
+            <span class="logo__mark">></span>
+            <span class="logo__text ">
+                Lev's blog</span>
+            
+        
+    </div>
+</a>
+
+
+        <span class="header__right">
+            
+        </span>
+    </span>
+</header>
+
+
+            <div class="content">
+                
+  <main class="post">
+
+    <div class="post-info">
+      <p>
+        
+        
+
+        
+      </p>
+    </div>
+
+    <article>
+      <div class="post-info">
+        <p>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          
+            2024-08-01 10:33
+          
+
+           
+            
+          
+        </p>
+      </div>
+      <h1 class="post-title">
+        <a href="http://localhost:1313/posts/yet-another-language-tutorial/">Build your own language interpreter from scratch</a>
+      </h1>
+
+      
+
+      
+
+      
+
+      <div class="post-content">
+        <p>Creating your own programming language is not hard. In fact, once you understand the basic building blocks, it can even be fun.</p>
+<p>All programming languages, from the simplest one like Python to the incomprehensible one like C++, are built using three independent components: a lexer, a parser, and an translator.</p>
+<p>In this post, we will cover all three of them, implement them in the Internet&rsquo;s favorite language du jour, Rust, and run a program written in our own language.</p>
+<p>All code examples will also have a Rust Playground link, so you can them out as you follow along.</p>
+<p>Without further ado, let&rsquo;s get started.</p>
+<h2 id="lexer">Lexer</h2>
+<p>The lexer takes text and converts it to a list of tokens. A token could be a letter, a word, a number, or a punctuation mark. Tokens have meaning depending on where they are situated in the code, but we will not concern ourselves with that just yet.</p>
+<p>Let&rsquo;s start with a simple program that goes something like this:</p>
+<pre tabindex="0"><code>1 + 2
+</code></pre><p>The lexer&rsquo;s job is to read this code and produce a sequence of tokens, as follows:</p>
+<pre tabindex="0"><code>Number(1), Plus, Number(2)
+</code></pre><p>While both you and I strongly suspect that this program will add one and two together to produce <code>3</code>, the lexer will not make any assumptions at this stage.</p>
+<p>Let&rsquo;s jump into some code. First, let&rsquo;s define the list of tokens our language will support:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#e6db74">/// List of all available tokens in our language.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span><span style="color:#75715e">#[derive(Debug)]</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">enum</span> <span style="color:#a6e22e">Token</span> {
+</span></span><span style="display:flex;"><span>    Number(<span style="color:#66d9ef">i64</span>),
+</span></span><span style="display:flex;"><span>    Plus,
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Keep this list nearby, we&rsquo;ll be adding more tokens to it later as our language evolves. It can only add numbers at the moment, but we&rsquo;ll be adding more features later like control flow with if-statements and for-loops.</p>
+<h3 id="extracting-tokens">Extracting tokens</h3>
+<p>At the very basic level, a token is a single character, like the plus sign (<code>+</code>). Our lexer (like all the others) will therefore process the source code one character at a time.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#e6db74">/// Lexer takes a string and returns a list of tokens.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span><span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Lexer</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">&#39;a</span><span style="color:#f92672">&gt;</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Source code.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    source: <span style="color:#66d9ef">&amp;</span><span style="color:#a6e22e">&#39;a</span> <span style="color:#66d9ef">str</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Resulting list of tokens.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    tokens: Vec<span style="color:#f92672">&lt;</span>Token<span style="color:#f92672">&gt;</span>,
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">impl</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">&#39;a</span><span style="color:#f92672">&gt;</span> Lexer<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">&#39;a</span><span style="color:#f92672">&gt;</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">/// Create new lexer for the source code.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">new</span>(source: <span style="color:#66d9ef">&amp;</span><span style="color:#a6e22e">&#39;a</span> <span style="color:#66d9ef">str</span>) -&gt; <span style="color:#a6e22e">Lexer</span> {
+</span></span><span style="display:flex;"><span>        Lexer {
+</span></span><span style="display:flex;"><span>            source,
+</span></span><span style="display:flex;"><span>            tokens: Vec::new(),
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">/// Convert code into a list of tokens, consuming the lexer.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">tokens</span>(<span style="color:#66d9ef">mut</span> self) -&gt; Vec<span style="color:#f92672">&lt;</span>Token<span style="color:#f92672">&gt;</span> {
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// Extract tokens one character at a time.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">for</span> c <span style="color:#66d9ef">in</span> self.source.chars() {
+</span></span><span style="display:flex;"><span>            todo!()
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self.tokens
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Our language only supports adding numbers, so our tokens can range between <code>0</code> and <code>9</code>, and <code>+</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">tokens</span>(<span style="color:#66d9ef">mut</span> self) -&gt; Vec<span style="color:#f92672">&lt;</span>Token<span style="color:#f92672">&gt;</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">use</span> Token::<span style="color:#f92672">*</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Extract tokens one character at a time.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> c <span style="color:#66d9ef">in</span> self.source.chars() {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">match</span> c {
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#39;0&#39;</span><span style="color:#f92672">..=</span><span style="color:#e6db74">&#39;9&#39;</span> <span style="color:#f92672">=&gt;</span> self.tokens.push(
+</span></span><span style="display:flex;"><span>                Number(c.to_digit(<span style="color:#ae81ff">10</span>).unwrap() <span style="color:#66d9ef">as</span> <span style="color:#66d9ef">i64</span>)
+</span></span><span style="display:flex;"><span>            ),
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#39;+&#39;</span> <span style="color:#f92672">=&gt;</span> self.tokens.push(Plus),
+</span></span><span style="display:flex;"><span>            c <span style="color:#f92672">=&gt;</span> todo!(<span style="color:#e6db74">&#34;lexer error, unsupported character: &#39;</span><span style="color:#e6db74">{}</span><span style="color:#e6db74">&#39;&#34;</span>, c),
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    self.tokens
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>While simple, this code does a lot. We extract characters from text, interpret their meaning in the context of our code, and produce values that our compiler can understand. The separation of concerns between the lexer and the parser makes building a compiler a lot easier.</p>
+<p>Before writing any more code, we should probably write a simple test to make sure we&rsquo;re on the right track. I&rsquo;m using Rust Playground so we can just write a <code>main</code> function:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">main</span> () {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> source <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;1 + 2&#34;</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> lexer <span style="color:#f92672">=</span> Lexer::new(source);
+</span></span><span style="display:flex;"><span>    println!(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{:?}</span><span style="color:#e6db74">&#34;</span>, lexer.tokens());
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Everything seems to be in order, let&rsquo;s run our code:</p>
+<pre tabindex="0"><code>thread &#39;main&#39; panicked at src/main.rs:38:22:
+not yet implemented: lexer error, unsupported character: &#39; &#39;
+</code></pre><p>If you have done this before, you probably noticed this beforehand, but for all the beginners this may come as a surprise: the space character (<code> </code>) is also a token which is part of the language syntax. Therefore, the lexer needs to handle it. We do not have a use for the space token yet, beyond separating other tokens, so we will simply ignore it:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">match</span> c {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Ignore spaces.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#e6db74">&#39; &#39;</span> <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">continue</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;0&#39;</span><span style="color:#f92672">..=</span><span style="color:#e6db74">&#39;9&#39;</span> <span style="color:#f92672">=&gt;</span> self.tokens.push(
+</span></span><span style="display:flex;"><span>        Number(c.to_digit(<span style="color:#ae81ff">10</span>).unwrap() <span style="color:#66d9ef">as</span> <span style="color:#66d9ef">i64</span>)
+</span></span><span style="display:flex;"><span>    ),
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;+&#39;</span> <span style="color:#f92672">=&gt;</span> self.tokens.push(Plus),
+</span></span><span style="display:flex;"><span>    c <span style="color:#f92672">=&gt;</span> todo!(<span style="color:#e6db74">&#34;lexer error, unsupported character: &#39;</span><span style="color:#e6db74">{}</span><span style="color:#e6db74">&#39;&#34;</span>, c),
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Running our lexer now with support for spaces, we are getting the right result:</p>
+<pre tabindex="0"><code>[Number(1), Plus, Number(2)]
+</code></pre><p>As the designer of your own language, you get to decide what goes and what breaks your code. Some languages for example would throw a syntax error if a space was missing (e.g. Python, which uses it for indentation).</p>
+<h3 id="multi-character-tokens">Multi-character tokens</h3>
+<p>We are keeping our language simple on purpose so we can cover the whole process without getting overwhelmed, but before we go to writing the parser, let&rsquo;s add support for multi-character numbers. After all, our language would be pretty silly if it could only count to 9.</p>
+<p>Since our lexer reads the code one character at a time and numbers can effectively be infinitely large, we need to add a buffer to collect digits as we consume them from the input:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#e6db74">/// Lexer takes a string and returns a list of tokens.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span><span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Lexer</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">&#39;a</span><span style="color:#f92672">&gt;</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Source code.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    source: <span style="color:#66d9ef">&amp;</span><span style="color:#a6e22e">&#39;a</span> <span style="color:#66d9ef">str</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Resulting list of tokens.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    tokens: Vec<span style="color:#f92672">&lt;</span>Token<span style="color:#f92672">&gt;</span>,
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Buffer for multi-character tokens.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    buffer: String,
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">impl</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">&#39;a</span><span style="color:#f92672">&gt;</span> Lexer<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">&#39;a</span><span style="color:#f92672">&gt;</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">/// Process a multi-character token stored in the buffer.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">process_token</span>(<span style="color:#f92672">&amp;</span><span style="color:#66d9ef">mut</span> self) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">use</span> Token::<span style="color:#f92672">*</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// Empty buffer means no more tokens in the input.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> self.buffer.is_empty() {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span>;
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// Use the standard library&#39;s [`str::parse`]
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#75715e">// to convert text to an integer.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        self.tokens.push(
+</span></span><span style="display:flex;"><span>            Number(self.buffer.as_str().parse().unwrap())
+</span></span><span style="display:flex;"><span>        );
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// Clear the buffer for the next token.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        self.buffer.clear();
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Now that we handle multi-character numbers, the space token needs to be handled differently. Instead of just ignoring it, we will process whatever is in the buffer instead:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">for</span> c <span style="color:#66d9ef">in</span> self.source.chars() {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">match</span> c {
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// Spaces separate tokens.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#e6db74">&#39; &#39;</span> <span style="color:#f92672">=&gt;</span> self.process_token(),
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// Buffer number characters
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#75715e">// instead of parsing them individually.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#e6db74">&#39;0&#39;</span><span style="color:#f92672">..=</span><span style="color:#e6db74">&#39;9&#39;</span> <span style="color:#f92672">=&gt;</span> self.buffer.push(c),
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#39;+&#39;</span> <span style="color:#f92672">=&gt;</span> self.tokens.push(Plus),
+</span></span><span style="display:flex;"><span>        c <span style="color:#f92672">=&gt;</span> todo!(<span style="color:#e6db74">&#34;lexer error, unsupported character: &#39;</span><span style="color:#e6db74">{}</span><span style="color:#e6db74">&#39;&#34;</span>, c),
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">// Don&#39;t forget to process whatever is in the buffer
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e">// at the end of the input:
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>self.process_token();
+</span></span></code></pre></div><p>Let&rsquo;s change the source code of our program and try the lexer now with actual support for numbers:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">let</span> source <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;21 + 2&#34;</span>;
+</span></span></code></pre></div><p>Interpreting the new code produces the expected stream of tokens:</p>
+<pre tabindex="0"><code>[Number(21), Plus, Number(2)]
+</code></pre><p>It may seem like our lexer is still incomplete since we haven&rsquo;t tried adding support for more advanced control flow like <code>if</code> or <code>for</code> instructions, but actually, since it supports parsing multi-character tokens, adding more tokens will be easy. More on that later though, let&rsquo;s move forward with our compiler and build its second component: the parser.</p>
+<p>The full source code for the lexer is available on <a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2021&amp;gist=8f1a2f1b32394bafbcc0a3f5f8a53159">Rust Playground</a>.</p>
+<h2 id="parser">Parser</h2>
+<p>The parser takes a list (also called a stream) of tokens and produces an Abstract Syntax Tree. The AST is a structural representation of code: it organizes tokens in such a way that makes sense in the context of the language rules. The AST validates that the code is syntactically correct.</p>
+<p>Before we can build our parser, we need to get a bit more involved in our language design. A parser needs us to have a formal definition of what our language can do. Our example is adding numbers, so let&rsquo;s start with that and add more features as we go.</p>
+<h3 id="formal-definition">Formal definition</h3>
+<p>A formal definition for our language serves as a blueprint of what our language can do. Our language is pretty simple, so the definition could go something like this:</p>
+<pre tabindex="0"><code>language = expression
+expression = term operation term | term
+term = value
+value = number
+operation = &#39;+&#39;
+</code></pre><p>Before trying to understand what this means, let&rsquo;s throw in some formal definitions:</p>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Definition</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Language</td>
+<td>The programming language we are designing.</td>
+</tr>
+<tr>
+<td>Expression</td>
+<td>A piece of code which when executed produces a single value as a result. Expressions are composed of terms and operations.</td>
+</tr>
+<tr>
+<td>Term</td>
+<td>A value, either constant or variable.</td>
+</tr>
+<tr>
+<td>Operation</td>
+<td>An action that combines two expressions into one.</td>
+</tr>
+</tbody>
+</table>
+<p>Armed with these, let&rsquo;s go through our language definition line by line.
+W</p>
+<pre tabindex="0"><code>language = expression
+</code></pre><p>Our entire language is just one expression. Programs written in this language effectively can contain only one line of code. A bit boring, but we will expand this later quite easily.</p>
+<pre tabindex="0"><code>expression = term operation term | term
+</code></pre><p>An expression in our language is either a binary operation, or a single expression. While somewhat confusing at first, this recursive definition is simpler than it appears: it means an expression can be either composed of two expressions joined together by an operation, e.g. addition, or just be an expression by itself, like a constant or a variable. Going down to the next line, things are starting to make sense:</p>
+<pre tabindex="0"><code>expression = term
+</code></pre><p>An expression can just be a term. Since a term can be a constant, an expression can simply be a number, like <code>12</code>, or an operation on two terms, like our original example: <code>21 + 2</code>.</p>
+<p>The next 3 lines complete our formal definition:</p>
+<pre tabindex="0"><code>term = value
+value = number
+operation = &#39;+&#39;
+</code></pre><p>A term can be a value, a value is a number, and an operation can be an addition. Any line of code we write in our language can be represented using this formal definition. So, to make a parser for our language, we just need to implement this definition.</p>
+<h3 id="basic-blocks">Basic blocks</h3>
+<p>Starting from the bottom, let&rsquo;s implement the operation, value and term:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#75715e">#[derive(Debug)]</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">enum</span> <span style="color:#a6e22e">Operation</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">/// Addition operation.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    Addition,
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#[derive(Debug)]</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">enum</span> <span style="color:#a6e22e">Value</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">/// A value can be a number. Our language translates
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    <span style="color:#e6db74">/// all numbers to 64-bit signed integers, which makes things easier,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    <span style="color:#e6db74">/// but we can add more types later.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    Number(<span style="color:#66d9ef">i64</span>),
+</span></span><span style="display:flex;"><span>}
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e">#[derive(Debug)]</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">enum</span> <span style="color:#a6e22e">Term</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">/// A term is just a constant value.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    Value(Value),
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h3 id="expression">Expression</h3>
+<p>Now that we have our basic building blocks, let&rsquo;s define an expression:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#75715e">#[derive(Debug)]</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">enum</span> <span style="color:#a6e22e">Expression</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">/// A single term.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    Term(Term),
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">/// A binary operation.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    BinaryOp {
+</span></span><span style="display:flex;"><span>        left: Box<span style="color:#f92672">&lt;</span>Expression<span style="color:#f92672">&gt;</span>,
+</span></span><span style="display:flex;"><span>        op: <span style="color:#a6e22e">Operation</span>,
+</span></span><span style="display:flex;"><span>        right: Box<span style="color:#f92672">&lt;</span>Expression<span style="color:#f92672">&gt;</span>,
+</span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Just like the formal definition, an expression can either be a term or a binary operation on two expressions. In Rust, recursive enum definitions require the use of a <code>Box</code> to make sure the type has a finite size on the stack; the <code>Box</code> is a fixed-size pointer to an object on the heap.</p>
+<p>That&rsquo;s not a lot of code given our long theoretical explanation, but that&rsquo;s kind of the point: once we understand the theory, implementing the parser becomes straight forward.</p>
+<h3 id="process-tokens">Process tokens</h3>
+<p>Just like the lexer, the parser processes tokens one at a time. Since our language can only have one expression for now, we can implement the parser directly on the expression enum:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">use</span> std::iter::{Peekable, Iterator};
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">impl</span> Expression {
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">/// Given a stream of tokens, parse a single expression.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">parse</span>(
+</span></span><span style="display:flex;"><span>        stream: <span style="color:#66d9ef">&amp;</span><span style="color:#a6e22e">mut</span> Peekable<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">impl</span> Iterator<span style="color:#f92672">&lt;</span>Item <span style="color:#f92672">=</span> Token<span style="color:#f92672">&gt;&gt;</span>
+</span></span><span style="display:flex;"><span>    ) -&gt; <span style="color:#a6e22e">Expression</span> {
+</span></span><span style="display:flex;"><span>        todo!()
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">/// Given a stream of tokens, parse a single term.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">term</span>(
+</span></span><span style="display:flex;"><span>        stream: <span style="color:#66d9ef">&amp;</span><span style="color:#a6e22e">mut</span> Peekable<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">impl</span> Iterator<span style="color:#f92672">&lt;</span>Item <span style="color:#f92672">=</span> Token<span style="color:#f92672">&gt;&gt;</span>
+</span></span><span style="display:flex;"><span>    ) -&gt; <span style="color:#a6e22e">Expression</span> {
+</span></span><span style="display:flex;"><span>        todo!()
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div>
+      </div>
+    </article>
+
+    
+
+    <div class="post-info">
+      
+      
+
+      <p>
+        
+        
+      </p>
+    </div>
+
+    
+    <div class="pagination">
+        
+
+        <div class="pagination__buttons">
+            
+
+            
+            <span class="button next">
+                <a href="http://localhost:1313/posts/my-first-post/">
+                    <span class="button__text">My first post</span>
+                    <span class="button__icon">→</span>
+                </a>
+            </span>
+            
+        </div>
+    </div>
+
+
+    
+
+    
+
+    
+
+  </main>
+
+            </div>
+
+            
+                <footer class="footer">
+    
+    
+</footer>
+
+            
+        </div>
+
+        
+
+
+
+<script type="text/javascript" src="/bundle.min.e89fda0f29b95d33f6f4224dd9e5cf69d84aff3818be2b0d73e731689cc374261b016d17d46f8381962fb4a1577ba3017b1f23509d894f6e66431f988c00889e.js" integrity="sha512-6J/aDym5XTP29CJN2eXPadhK/zgYvisNc&#43;cxaJzDdCYbAW0X1G&#43;DgZYvtKFXe6MBex8jUJ2JT25mQx&#43;YjACIng=="></script>
+
+
+
+
+    </body>
+</html>
