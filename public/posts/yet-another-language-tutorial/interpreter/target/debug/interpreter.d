@@ -1,1 +1,0 @@
-/home/lev/code/levthe.dev/content/posts/yet-another-language-tutorial/interpreter/target/debug/interpreter: /home/lev/code/levthe.dev/content/posts/yet-another-language-tutorial/interpreter/src/main.rs
