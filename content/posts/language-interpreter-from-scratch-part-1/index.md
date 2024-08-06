@@ -15,7 +15,7 @@ All programming languages, from the friendliest ones like Python, to the incompr
 
 Where our interpreter will diverge is, instead of compiling our language to assembly, like the C++ compiler would do, or to some custom intermediate "bytecode" like the Python interpreter does, we will execute code directly.
 
-Our interpreter will be written in Rust, so we won't have to worry about memory management or performance (for now), and end up with something that is not just a toy example.
+Our interpreter will be written in Rust, so we will not have to worry about memory management or performance (for now), and end up with something that is not just a toy example.
 
 All code examples will also have a Rust Playground link, so you can run and edit them as you follow along.
 
@@ -23,7 +23,7 @@ Without further ado, let's get started.
 
 ## Lexer
 
-The lexer takes text and converts it to a list of tokens. A token could be a letter, a word, a number, or a punctuation mark. Tokens have meaning depending on their position in the code, but the lexer won't concern itself with syntax: it's only job is to transform text into an allowed list of symbols.
+The lexer takes text and converts it to a list of tokens. A token could be a letter, a word, a number, or a punctuation mark. Tokens have meaning depending on their position in the code, but the lexer will not concern itself with syntax: its only job is to transform text into an allowed list of symbols.
 
 ### Example
 
@@ -43,7 +43,7 @@ Number(1), Plus, Number(2)
 
 While you probably think that this program will add one and two together and produce `3`, the lexer is not allowed to make assumptions about syntax or what the code will do.
 
-Since we're writing our lexer in Rust, an enum that will represent all allowed tokens in our simple language seems like a good representation:
+Since we're writing our lexer in Rust, an enum that will represent all allowed tokens in our simple language seems like a good abstraction:
 
 ```rust
 /// List of all available tokens in our language.
