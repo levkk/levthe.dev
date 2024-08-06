@@ -1,15 +1,23 @@
 +++
-title = 'Build your own language interpreter from scratch'
+title = 'Language interpreter from scratch in Rust: Part 1 of many'
 date = 2024-08-01T13:33:45-04:00
 +++
 
-Creating your own programming language is not hard. In fact, once you understand the basic building blocks, it can even be fun.
+Creating your own programming language is an exciting and eye-opening experience. As coders, we rarely if ever get a say in how our tools work. Languages like Python, Ruby, C/C++ and even Rust have been around for a while and are used by millions. Therefore, adding a feature we want or removing an annoyance is often a multi-year process that goes nowhere.
 
-All programming languages, from the simplest one like Python to the incomprehensible one like C++, are built using three independent components: a lexer, a parser, and an translator.
+Designing your own language however, gives you the freedom to do whatever you want. As you dive deeper into the implementation of your interpreter, you will get to make decisions that impact the users of your language, possibly for decades to come. If nothing else, you will build empathy with other compiler authors and become a more enlightened engineer.
 
-In this post, we will cover all three of them, implement them in the Internet's favorite language du jour, Rust, and run a program written in our own language.
+This post is the first in a series that will guide you through designing your own programming language, and an interpreter program that will parse and execute your language.
 
-All code examples will also have a Rust Playground link, so you can them out as you follow along.
+## Quick introduction
+
+All programming languages, from the friendliest ones like Python, to the incomprehensible ones like C++, are built using two independent components: a lexer and a parser. This design pattern has existed for as long as I have been studying computing, so I will take it for granted and use it in this guide.
+
+Where our interpreter will diverge is, instead of compiling our language to assembly, like the C++ compiler would do, or to some custom intermediate "bytecode" like the Python interpreter does, we will execute code directly.
+
+Our interpreter will be written in Rust, so we won't have to worry about memory management or performance (for now), and end up with something that is not just a toy example.
+
+All code examples will also have a Rust Playground link, so you can run and edit them as you follow along.
 
 Without further ado, let's get started.
 
@@ -19,7 +27,7 @@ The lexer takes text and converts it to a list of tokens. A token could be a let
 
 ### Example
 
-Most programming languages allow its users to do math. Let's start building our interpreter with a simple arithmetic example and write a lexer that can handle it.
+Most programming languages allow its users to do math. Let's start building our interpreter with a simple arithmetic example, and write a lexer that can handle it.
 
 _The code_
 
@@ -33,9 +41,9 @@ The job of the lexer is to transform this code into the following tokens:
 Number(1), Plus, Number(2)
 ```
 
-While you probably think that this program will add one and two together and produce `3`, the lexer is not allowed to make assumptions about syntax or execution of the code.
+While you probably think that this program will add one and two together and produce `3`, the lexer is not allowed to make assumptions about syntax or what the code will do.
 
-Since we're writing our lexer in Rust, let's define an enum that will represent all allowed tokens in our simple language:
+Since we're writing our lexer in Rust, an enum that will represent all allowed tokens in our simple language seems like a good representation:
 
 ```rust
 /// List of all available tokens in our language.
@@ -46,11 +54,11 @@ pub enum Token {
 }
 ```
 
-This list of tokens is short currently, but as our language evolves, it will get longer and more interesting. Our language can only add numbers at the moment, but we will add more features later, like control flow with `if` statements and `for` loops.
+This list of tokens is short, but as our language evolves, it will get longer and more interesting. Our language can only add numbers at the moment, but we will add more features later, like control flow with `if` statements and `for` loops.
 
 ### Extracting tokens
 
-At a base level, a token is a single character, like the plus sign (`+`). Our lexer will start processing the source code one character at a time.
+At the most basic level, a token is a single character, like the plus sign (`+`). Our lexer therefore will start processing the source code one character at a time:
 
 ```rust
 pub struct Lexer<'a> {
@@ -71,15 +79,19 @@ impl<'a> Lexer<'a> {
     /// Extract tokens one character at a time.
     pub fn tokens(&mut self) -> Vec<Token> {
         for c in self.source.chars() {
+            // Placeholder for actual lexer logic.
             todo!("extract tokens")
         }
 
+        // Return all tokens, leaving an empty list in their place.
+        // This allows to parse the same code multiple times
+        // without creating a new lexer.
         std::mem::take(&mut self.tokens)
     }
 }
 ```
 
-Since our language only supports adding numbers, our tokens can only range between the numbers `0` and `9`, and the `+` sign:
+Since our language only supports adding numbers, our tokens can only include numbers between `0` and `9`, and the `+` sign:
 
 ```rust
 for c in self.source.chars() {
@@ -96,9 +108,7 @@ for c in self.source.chars() {
 }
 ```
 
-While short, this code does quite a bit: it extracts characters from text, interprets their meaning in the context of our language, and produces values that our interpreter can understand. Since parsing text is handled by the lexer, the rest of our interpreter, namely the parser, can only work with a single enum. This separation of concerns makes compilers (and interpreters) easier to write and maintain.
-
-Lexer code is available [here](https://play.rust-lang.org/?version=stable&mode=debug&edition=2021&gist=158b82429a9d1373db4ff54234790a01).
+While short, this code does quite a bit: it extracts characters from text, maps them to the vocabulary of our language, and produces values that our interpreter can later understand. Since parsing text is handled by the lexer, the rest of our interpreter, namely the parser, can only work with a single enum. This separation of concerns makes compilers (and interpreters) easier to write and maintain.
 
 ### Testing the lexer
 
@@ -184,6 +194,7 @@ for c in self.source.chars() {
         // Buffer number characters
         // instead of parsing them individually.
         '0'..='9' => self.buffer.push(c),
+        // Everything else remains the same.
         '+' => self.tokens.push(Token::Plus),
         c => todo!("lexer error, unsupported character: '{}'", c),
     }
@@ -207,6 +218,8 @@ which produces:
 ```
 
 This is good enough to handle our simple language. While we may be tempted to add more tokens like `if`, `for`, or `-` to support more features, let's save that for later. By building the entire interpreter first, using the right abstractions, we will be able to easily add language features later.
+
+Lexer code is available [here](https://play.rust-lang.org/?version=stable&mode=debug&edition=2021&gist=158b82429a9d1373db4ff54234790a01).
 
 ## Parser
 
@@ -253,7 +266,9 @@ Moving on to the next line:
 expression = term operation term | term
 ```
 
-An expression in our language is either a binary operation on two terms, or a single term. For example, our code above is an expression of two terms joined together with a binary operator: the term on the left, `21`, is joined using the addition operator (`+`) to the right term, `2`. Alternatively, if we just typed `21` into our interpreter, by itself that expression would evaluate to `21`.
+An expression in our language is either a binary operation on two terms, or a single term. For example, our example `21 + 2` is an expression of two terms joined together with a binary operator: the term on the left, `21`, is joined using the addition operator (`+`) to the right term, `2`.
+
+Alternatively, if we just typed `21` into our interpreter, by itself that expression would evaluate to `21`. It is not immediately obvious why we need single-term expressions, but they will become useful once we will build more complex expressions.
 
 Moving on to the next line:
 
@@ -271,7 +286,7 @@ value = number
 
 Our simple language only allows numbers, but soon enough we will add strings, lists and hashes. We will be able to define operations between values of different types, e.g. addition between a list and a string, and our language will really take form.
 
-Finally, our only allowed operation in, addition, is specified one the last line:
+Finally, our only allowed operation in, addition, is specified on the last line:
 
 ```
 operation = '+'
@@ -279,19 +294,19 @@ operation = '+'
 
 #### Parsing our example
 
-Now that we have formal definitions, let's parse our example manually:
+Now that we have formal definitions, let's parse our example manually. Our code,
 
 ```
 1 + 2
 ```
 
-when parsed should produce the following AST:
+based on our formal language definition, should produce the following AST:
 
 ![AST](ast.png)
 
 ### Parsing expressions
 
-Now that we have a formal definition and an AST, let's parse our example, starting at the bottom:
+Now that we have a formal definition and an example of an AST, let's parse our example, starting at the bottom:
 
 ```rust
 /// An operation. Only addition currently supported.
@@ -330,9 +345,9 @@ enum Expression {
 }
 ```
 
-That's not a lot of code given our long theoretical explanation, but that was the goal: as we understood theory, implementing the parser became easy.
+That's not a lot of code given our long theoretical explanation, but that was the goal: as we understood theory, implementing the parser becomes easy.
 
-### Parse tokens
+### Parsing tokens
 
 Just like the lexer, a parser processes tokens one at a time. Since our language only has expressions, to have a complete language parser, we just need to implement expression parsing:
 
@@ -344,12 +359,18 @@ impl Expression {
     pub fn parse(
         stream: &mut impl Iterator<Item = Token>
     ) -> Expression {
+        // Parse the left term.
         let left = Self::term(stream);
+
+        // Optionally, parse the operator.
         let operation = stream.next();
 
         match operation {
+            // An operator is present, this is a binary operation.
             Some(operation) => {
                 let op = match operation {
+                    // We only support addition. Throw a syntax error if
+                    // we see anything else.
                     Token::Plus => Operation::Addition,
                     _ => panic!(
                         "syntax error, expected operation, got: {:?}",
@@ -357,6 +378,8 @@ impl Expression {
                     ),
                 };
 
+                // A binary operation must have two terms. Parse
+                // the right term or throw an error if it's not there.
                 let right = Self::term(stream);
 
                 Expression::Binary {
@@ -366,6 +389,7 @@ impl Expression {
                 }
             },
 
+            // Expression has no operator, this is just a single term.
             None => Expression::Term(left),
         }
     }
@@ -377,6 +401,9 @@ impl Expression {
         let token = stream.next().expect("expected a token");
 
         match token {
+            // Convert the number token to a term containing a value.
+            // No other tokens are supported here, so throw
+            // a syntax error if another token is there instead.
             Token::Number(n) => Term::Value(Value::Number(n)),
             _ => panic!("syntax error, expected term, got: {:?}", token),
         }
@@ -417,35 +444,42 @@ Binary {
 }
 ```
 
-That looks about right. Let's recap. We have converted text into tokens, and parsed those tokens with our own parser, creating an Abstract Syntax Tree, validating syntax using our formal language definition. That was a lot of work just to add two numbers together, but the payoff is finally here. Let's bring our own interpreter to life and execute our AST.
+That looks about right. Let's recap. We have converted text into tokens, parsed those tokens with our own parser, created an Abstract Syntax Tree, and validated syntax using our formal language definition. That was a lot of work just to add two numbers together, but the payoff is finally here: let's bring our own interpreter to life by executing our AST.
 
 Source code for the parser is [here](https://play.rust-lang.org/?version=stable&mode=debug&edition=2021&gist=047a475186aa72ad5dd080dc00355a57).
 
 ## Executor
 
-An executor, unlike a compiler, takes the intermediary representation of the code (the AST) and executes it directly on the machine where the code is saved. A compiler, on the other hand, translates the AST into machine code, or another language, which is then executed by either another interpreter or another machine.
+An executor, unlike a compiler, takes the intermediary representation of the code (the AST) and executes it directly on the machine where the code is read. A compiler, on the other hand, translates the AST into machine code, or another language, which is then executed by either another interpreter or another machine.
 
-For example, if you are familiar with TypeScript, the TypeScript compiler translates source code into JavaScript, which is then executed by the V8 interpreter. To make things even more complicated (some would say interesting), V8 can also act as a compiler of its own, by translating JavaScript into assembly and executing it directly on the CPU. This is called JIT (Just-in-Time) compilation, a topic we could explore at some other time.
+For example, if you are familiar with TypeScript, the TypeScript compiler translates TypeScript code into JavaScript, which is then executed by the V8 interpreter. To make things even more interesting, V8 can also act as a compiler, by translating JavaScript into assembly and executing it directly on the CPU. This is called JIT (Just-in-Time) compilation, a topic we will explore at another time.
 
 Since our language is written in Rust, our interpreter will be able to execute code on any machine where Rust is supported. This makes our language pretty flexible, since Rust can run on all Intel, AMD, and ARM CPUs, Linux, Windows and Mac. For example, another popular interpreted language, Python, is actually written in C, which makes it even more portable.
 
-That is enough information I think. Let's get to business of executing our code.
+That is enough theory. Let's get to business of executing code.
 
 ### Evaluating expressions
 
-Our expressions, as they currently stand, only have two variants: binary operation and a single term. Both need to have an execution path defined, so let's handle them both in one simple function:
+Our expressions, currently, only have two variants: binary operation and a single term. Both need to have an execution path, so let's handle them both in one simple function:
 
 ```rust
 impl Expression {
+    // Evaluate an expression and produce a single value.
     pub fn evaluate(&self) -> Value {
         match self {
+            // Single-term expressions just evaluate to the value
+            // they are holding.
             Expression::Term(Term::Value(value)) => value.clone(),
+
+            // Binary operations execute the operation.
             Expression::Binary {
                 left: Term::Value(left),
                 op,
                 right: Term::Value(right)
             } => {
                 match op {
+                    // Only addition is currently defined,
+                    // just add the two values together in Rust.
                     Operation::Addition => left.clone() + right.clone(),
                 }
             },
@@ -454,7 +488,7 @@ impl Expression {
 }
 ```
 
-Looking back at our formal definition, an expression is some code that, when executed, returns a single value. So, the `evaluate` method here takes an expression and has to return a `Value`. The first kind of expression, a single term, is easy to execute: it just returns whatever value it is holding.
+Looking back at our formal definition, an expression is some code that, when executed, returns a single value. So, the `evaluate` method takes an expression, and has to return a `Value`. The first kind of expression, a single term, is easy to execute: it just returns whatever value it is holding.
 
 The binary operation is only slightly more involved. To evaluate it, we take the left side and join it with the right side using the specified operation. Since we currently support only addition, the operation we are implementing is simple: we add the two values together.
 
@@ -494,6 +528,7 @@ impl Add for Value {
 
     fn add(self, other: Value) -> Value {
         match (self, other) {
+            // A bit of basic math here.
             (Value::Number(a), Value::Number(b)) => Value::Number(a + b),
         }
     }
@@ -549,7 +584,7 @@ A string is a sequence of characters, which when interpreted, is represented as 
 - `'''this is a multi-line string'''`
 - `"""this is also a multi-line string"""`
 
-To support strings, we will need to make modifications at all 3 levels of our interpreter. We need to add support for parsing strings to the lexer, for representing strings in the AST in the parser, and finally executing operations on strings in the executor.
+To support strings, we will need to make modifications at all three levels of our interpreter: we need to add support for parsing strings to the lexer, for representing strings in the AST in the parser, and finally executing operations on strings in the executor.
 
 ### Lexer
 
@@ -575,12 +610,14 @@ impl<'a> Lexer {
 
         while let Some(c) = chars.next() {
             match c {
+                // No changes here.
                 ' ' => self.process_token(),
                 '0'..='9' => self.buffer.push(c),
                 '+' => self.tokens.push(Token::Plus),
 
                 // Double quote indicating the start of a string.
                 '"' => {
+                    // Buffer a string into its own buffer.
                     let mut string = String::new();
 
                     // Consume from the same iterator,
@@ -593,6 +630,7 @@ impl<'a> Lexer {
                         }
                     }
 
+                    // We have a complete string.
                     self.tokens.push(Token::String(string));
                 }
 
@@ -609,7 +647,7 @@ impl<'a> Lexer {
 }
 ```
 
-Looks good enough for now, let's test it with a modification to our `main` function. I'm removing code that parses and evaluates this expression for now, since we haven't added support for strings into the parser yet:
+Looks good enough for now. Parsing strings can get more interesting, if you want to support escaping special characters (e.g. `\n`, the new line character) but for now, let's just test what we have. I'm temporarily removing code that parses and evaluates this expression, since we haven't added support for strings into the parser yet:
 
 ```rust
 fn main () {
@@ -629,7 +667,7 @@ which produces:
 [Number(21), Plus, String("hello world"), Plus, Number(2)]
 ```
 
-While this may not make much sense yet in the context of our language, the lexer does not care and produces a valid list of tokens. Good stuff, let's add the string into our Abstract Syntax Tree.
+While this may not make much sense yet in the context of our language, the lexer does not care and produces a valid list of tokens. Things are good, let's add string support into our Abstract Syntax Tree.
 
 ### Parser
 
@@ -666,12 +704,17 @@ which now compiles, but if you attempt to parse this expression, you will still 
 
 ```rust
 impl Expression {
+    // .. redacted for brevity
+
     fn term(stream: &mut impl Iterator<Item = Token>) -> Term {
         let token = stream.next().expect("expected a token");
 
         match token {
+            // Number handling remains the same.
             Token::Number(n) => Term::Value(Value::Number(n)),
+            // Handle the new string token.
             Token::String(s) => Term::Value(Value::String(s)),
+            // Still throw a syntax error on any other token.
             _ => panic!("syntax error, expected term, got: {:?}", token),
         }
     }
@@ -725,9 +768,9 @@ syntax error, addition between Number(21)
 and String("hello world") not supported
 ```
 
-Very cool, our parser can now build Abstract Syntax Trees which contain string tokens. You will note I removed the leftmost term (`+ 2`) from the expression. Our parser can only parse expressions with two terms currently. We will add support for unlimited terms later on, and that is when all these abstractions will really worthwhile.
+Very cool, our parser can now build Abstract Syntax Trees which contain strings. You will note I removed the leftmost term (`+ 2`) from the expression. Our parser can only handle expressions with two terms for now. We will add support for unlimited terms later on, and that is when all these abstractions will really become worthwhile.
 
-That being said, our interpreter is still not working. That is expected; we have not added support for string-based operations yet. This is where our language can become unique and interesting.
+That being said, our interpreter is still not working. This is expected; we have not added support for string-based operations yet. Our language now can become unique and interesting.
 
 ### Syntactic sugar
 
@@ -743,7 +786,7 @@ You will get this error:
 TypeError: unsupported operand type(s) for +: 'int' and 'str'
 ```
 
-That makes sense for Python, but what if we wanted to support this operation in our language, what would we make it do? Instead of throwing a syntax error, we could conceivably just convert the number to a string and concatenate the two together. Python forces you to write this out explicitly, e.g. `str(21) + "hello world"`, but we could do this automatically.
+That makes sense for Python, but what if we wanted to support this operation in our language, and if so, what would we make it do? Instead of throwing a syntax error, we could just convert the number to a string and concatenate the two together. Python forces you to write this out explicitly, e.g. `str(21) + "hello world"`, but we could do this automatically.
 
 Doing an operation automatically because it is the most common and desired outcome is called "syntactic sugar". The language designer makes it easy for language users to write code by executing some implied operations automatically. Going back to Python, if you run:
 
@@ -796,10 +839,177 @@ Running our interpreter now, we get:
 String("21hello world")
 ```
 
-Now we are cooking with gas! Our language has a feature some other language does not, and we have implemented it from scratch in Rust. Source code available [here](https://play.rust-lang.org/?version=stable&mode=debug&edition=2021&gist=b2cf0b7d4b5d72dc060f096404014753).
-
-Last but not least, let's update our language formal definition to include the change we just made:
+Now we are cooking with gas! Our language has a feature some other language does not, and we have implemented it from scratch in Rust. Last but not least, let's update our language formal definition to include the change we just made:
 
 ```
 value = number | string
 ```
+
+Source code available [here](https://play.rust-lang.org/?version=stable&mode=debug&edition=2021&gist=b2cf0b7d4b5d72dc060f096404014753).
+
+### Adding more operations
+
+Popular programming languages support a lot of operations and operators. To name a few:
+
+| Operation | Operator | Example | Result |
+|-----------|----------|---------|--------|
+| Addition | `+` | `21 + 2` | `23` |
+| Subtraction | `-` | `21 - 2` | `19` |
+| Multiplication | `*` | `21 * 2` | `42` |
+| Division | `/` | `21 / 2` | `10.5` |
+| Modulo | `%` | `21 % 2` | `1` |
+| Exponentiation | `**` | `21 ** 2` | `441` |
+
+How our language handles those operations can make it unique and useful to its users. For example, in C, a division of two integers always produces an integer. If the division is not whole, e.g. `21 / 2`, the result is rounded towards zero, producing `10`. Meanwhile, in science-oriented languages like Python, the same division produces a floating point number, `10.5`.
+
+This is not an accident and was done by design to make languages more useful inline with their indented audiences. Your language, depending on where you would want it to be used, can behave differently.
+
+Let's add multiplication to our language. Following the same pattern as addition, we need to modify our lexer, parser and executor.
+
+#### Add token to lexer
+
+First thing we need to do is choose the token we want to signify multiplication. Since this is our language, we can use anything we want, e.g. `mul` or `x`, but to make our language easier to learn, we should probably just stick to the commonly used `*`.
+
+```rust
+#[derive(Debug)]
+pub enum Token {
+    Number(i64),
+    Plus,
+    String(String),
+    Star,
+}
+```
+
+Note the name of the token in the lexer is not tied to multiplication. In fact, we can use the Star token in other contexts, e.g. dereferencing pointers.
+
+Going back to the `Lexer::tokens` function, parsing the Star token needs to be handled:
+
+```rust
+match c {
+    // .. redacted for brevity
+    '*' => self.tokens.push(Token::Star),
+    c => todo!("lexer error, unsupported character: '{}'", c),
+}
+```
+
+You can probably see already that as we add more tokens, this `match` statement will get quite large; while some programming books would encourage you to make your functions small, when programming parsers, you are better off keeping everything in one place, so you can easily add more tokens later.
+
+#### Add multiplication to parser
+
+At the parser, we get to decide what the Star token actually does, and since we are implementing multiplication, let's add it to the list of operations:
+
+```rust
+#[derive(Debug)]
+enum Operation {
+    Addition,
+    Multiplication,
+}
+```
+
+Mapping the Star token in `Expression::parse` to multiplication, we get:
+
+```rust
+let op = match operation {
+    Token::Plus => Operation::Addition,
+    Token::Star => Operation::Multiplication,
+    _ => panic!("syntax error, expected operation, got: {:?}", operation),
+};
+```
+
+Adding support for the actual operation to the executor in `Expression::evaluate`, we get:
+
+```rust
+match op {
+    Operation::Addition => {
+        left.clone() + right.clone()
+    }
+    
+    Operation::Multiplication => {
+        left.clone() * right.clone()
+    }
+}
+```
+
+Just like with addition, we need to explain to Rust how to multiply two `Value` enums together. Idiomatically, we chose to implement the `std::ops::Mul` trait:
+
+```rust
+use std::ops::Mul;
+
+impl Mul for Value {
+    type Output = Value;
+
+    fn mul(self, other: Value) -> Value {
+        match (self, other) {
+            (Value::Number(a), Value::Number(b)) => Value::Number(a * b),
+
+            // Supports 3 * "hello"
+            (
+                Value::Number(a),
+                Value::String(s),
+            ) => Value::String(s.repeat(a as usize)),
+
+            // Supports "hello" * 3
+            (
+                Value::String(s),
+                Value::Number(a),
+            ) => Value::String(s.repeat(a as usize)),
+
+            (a, b) => todo!(
+                "syntax error, '+' between {:?} and {:?} not supported",
+                a, b
+            ),
+        }
+    }
+}
+```
+
+If we change our source code in `main` to:
+
+```rust
+let source = r#"3 * "hello""#;
+```
+
+our interpreter will produce
+
+```
+String("hellohellohello")
+```
+
+Our language is getting more powerful with each operation we add. More importantly, we showed that adding additional operations is a mechanical task:
+
+1. Pick a token and add it to the lexer
+2. Map token to an operation in the parser
+3. Add operation to executor
+
+The lexer, parser and executor abstractions are working well. Lastly, let's keep our language definition up to date:
+
+```
+operation = '+' | '*'
+```
+
+Full code is available [here](https://play.rust-lang.org/?version=stable&mode=debug&edition=2021&gist=383394227bd99876688d7956f669829e).
+
+## Summary
+
+In this post, we learned quite a few things. I would love to keep going, but almost 5,000 words is a good place to take a breather, so let's do a quick recap.
+
+Programming languages are arbitrary, and you can design your own in about an hour. Writing the foundation for your interpreter requires less than 200 lines of code (most of which are comments).
+
+The interpreter is split into three distinct parts, lexer, parser, and executor, working independently and together to run your code on many different systems. Separating concerns into their own abstractions seemed excessive at first, but as the language evolved, adding features was easy, and our interpreter was able to grow with the language.
+
+We were able to build features into our language that another language chose not to support, making our language unique and useful for our purpose.
+
+## Next steps
+
+This is only the first part of many tutorials. Next ones will cover:
+
+- Variables and scope
+- If statements, for loops
+- Functions
+- More syntactic sugar to make your language unique and useful
+
+## Acknowledgments
+
+I learned how to do this over the last couple of weeks from other great tutorials. One of my favorites is [Writing a C Compiler](https://norasandler.com/2017/11/29/Write-a-Compiler.html) by Nora Sandler.
+
+My motivation for writing this was to document my learning journey into writing an HTML template engine for a Rust web framework I am building. My hope is that others will find this useful. Feedback and corrections always welcome, please feel free to reach out at hi@levthe.dev.

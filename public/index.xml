@@ -9,11 +9,11 @@
     <lastBuildDate>Thu, 01 Aug 2024 13:33:45 -0400</lastBuildDate>
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Build your own language interpreter from scratch</title>
+      <title>Language interpreter from scratch in Rust: Part 1 of many</title>
       <link>http://localhost:1313/posts/yet-another-language-tutorial/</link>
       <pubDate>Thu, 01 Aug 2024 13:33:45 -0400</pubDate>
       <guid>http://localhost:1313/posts/yet-another-language-tutorial/</guid>
-      <description>Creating your own programming language is not hard. In fact, once you understand the basic building blocks, it can even be fun.&#xA;All programming languages, from the simplest one like Python to the incomprehensible one like C++, are built using three independent components: a lexer, a parser, and an translator.&#xA;In this post, we will cover all three of them, implement them in the Internet&amp;rsquo;s favorite language du jour, Rust, and run a program written in our own language.</description>
+      <description>Creating your own programming language is an exciting and eye-opening experience. As coders, we rarely if ever get a say in how our tools work. Languages like Python, Ruby, C/C++ and even Rust have been around for a while and are used by millions. Therefore, adding a feature we want or removing an annoyance is often a multi-year process that goes nowhere.&#xA;Designing your own language however, gives you the freedom to do whatever you want.</description>
     </item>
     <item>
       <title>My first post</title>
