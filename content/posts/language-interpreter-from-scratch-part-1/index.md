@@ -1,6 +1,6 @@
 +++
 title = 'Language interpreter from scratch in Rust: Part 1 of many'
-date = 2024-08-01T13:33:45-04:00
+date = 2024-08-06T13:33:45-04:00
 +++
 
 Creating your own programming language is an exciting and eye-opening experience. As coders, we rarely if ever get a say in how our tools work. Languages like Python, Ruby, C/C++ and even Rust have been around for a while and are used by millions. Therefore, adding a feature we want or removing an annoyance is often a multi-year process that goes nowhere.
