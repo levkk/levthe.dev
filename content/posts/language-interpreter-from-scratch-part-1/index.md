@@ -43,7 +43,7 @@ Number(1), Plus, Number(2)
 
 While you probably think that this program will add one and two together and produce `3`, the lexer is not allowed to make assumptions about syntax or what the code will do.
 
-Since we're writing our lexer in Rust, an enum that will represent all allowed tokens in our simple language seems like a good abstraction:
+Since we are writing our lexer in Rust, an enum that will represent all allowed tokens in our simple language seems like a good abstraction:
 
 ```rust
 /// List of all available tokens in our language.
@@ -229,7 +229,7 @@ Before we can build our parser, we need to get a bit more involved in our langua
 
 ### Formal definition
 
-A formal definition is a blueprint of valid language syntax. It's only job is to ensure that tokens are presented in the correct order. It does not explain what those tokens mean or do; while the reader could infer that an `if` statement controls which part of the code is executed, the language designer could make that statement exit the program instead. Of course, that would be somewhat cruel, but the formal definition we are about to write really does not concern itself with how the interpreter chooses to execute the code.
+A formal definition is a blueprint of valid language syntax. Its only job is to ensure that tokens are presented in the correct order. It does not explain what those tokens mean or do; while the reader could infer that an `if` statement controls which part of the code is executed, the language designer could make that statement exit the program instead. Of course, that would be somewhat cruel, but the formal definition we are about to write really does not concern itself with how the interpreter chooses to execute the code.
 
 With that somewhat disturbing knowledge hammered into our minds, let's write something:
 
@@ -286,7 +286,7 @@ value = number
 
 Our simple language only allows numbers, but soon enough we will add strings, lists and hashes. We will be able to define operations between values of different types, e.g. addition between a list and a string, and our language will really take form.
 
-Finally, our only allowed operation in, addition, is specified on the last line:
+Finally, our only operation, addition, is specified on the last line:
 
 ```
 operation = '+'

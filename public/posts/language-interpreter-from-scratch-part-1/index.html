@@ -43,7 +43,7 @@ Designing your own language however, gives you the freedom to do whatever you wa
 Designing your own language however, gives you the freedom to do whatever you want.">
   <meta itemprop="datePublished" content="2024-08-01T13:33:45-04:00">
   <meta itemprop="dateModified" content="2024-08-01T13:33:45-04:00">
-  <meta itemprop="wordCount" content="5397">
+  <meta itemprop="wordCount" content="5396">
 
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Language interpreter from scratch in Rust: Part 1 of many">
@@ -156,7 +156,7 @@ Designing your own language however, gives you the freedom to do whatever you wa
 </code></pre><p>The job of the lexer is to transform this code into the following tokens:</p>
 <pre tabindex="0"><code>Number(1), Plus, Number(2)
 </code></pre><p>While you probably think that this program will add one and two together and produce <code>3</code>, the lexer is not allowed to make assumptions about syntax or what the code will do.</p>
-<p>Since we&rsquo;re writing our lexer in Rust, an enum that will represent all allowed tokens in our simple language seems like a good abstraction:</p>
+<p>Since we are writing our lexer in Rust, an enum that will represent all allowed tokens in our simple language seems like a good abstraction:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#e6db74">/// List of all available tokens in our language.
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span><span style="color:#75715e">#[derive(Debug)]</span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">enum</span> <span style="color:#a6e22e">Token</span> {
@@ -286,7 +286,7 @@ not yet implemented: lexer error, unsupported character: &#39; &#39;
 <p>The parser takes a list (sometimes called a stream) of tokens and produces an Abstract Syntax Tree. The AST, for short, is a structural representation of the code: it organizes tokens in such a way that makes sense in the context of the language rules. Constructing the AST consequently validates that the code is syntactically correct. When writing code in languages like Rust or Python, syntax errors which we are all too familiar with, are typically thrown by the parser.</p>
 <p>Before we can build our parser, we need to get a bit more involved in our language design. By understanding a bit of theory, we can build the right abstractions early on, and make our job easier later.</p>
 <h3 id="formal-definition">Formal definition</h3>
-<p>A formal definition is a blueprint of valid language syntax. It&rsquo;s only job is to ensure that tokens are presented in the correct order. It does not explain what those tokens mean or do; while the reader could infer that an <code>if</code> statement controls which part of the code is executed, the language designer could make that statement exit the program instead. Of course, that would be somewhat cruel, but the formal definition we are about to write really does not concern itself with how the interpreter chooses to execute the code.</p>
+<p>A formal definition is a blueprint of valid language syntax. Its only job is to ensure that tokens are presented in the correct order. It does not explain what those tokens mean or do; while the reader could infer that an <code>if</code> statement controls which part of the code is executed, the language designer could make that statement exit the program instead. Of course, that would be somewhat cruel, but the formal definition we are about to write really does not concern itself with how the interpreter chooses to execute the code.</p>
 <p>With that somewhat disturbing knowledge hammered into our minds, let&rsquo;s write something:</p>
 <pre tabindex="0"><code>language = expression
 expression = term operation term | term
@@ -341,7 +341,7 @@ operation = &#39;+&#39;
 <p>Moving down to the next line, the <code>value</code> is expanded to a number:</p>
 <pre tabindex="0"><code>value = number
 </code></pre><p>Our simple language only allows numbers, but soon enough we will add strings, lists and hashes. We will be able to define operations between values of different types, e.g. addition between a list and a string, and our language will really take form.</p>
-<p>Finally, our only allowed operation in, addition, is specified on the last line:</p>
+<p>Finally, our only operation, addition, is specified on the last line:</p>
 <pre tabindex="0"><code>operation = &#39;+&#39;
 </code></pre><h4 id="parsing-our-example">Parsing our example</h4>
 <p>Now that we have formal definitions, let&rsquo;s parse our example manually. Our code,</p>
