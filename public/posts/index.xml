@@ -23,24 +23,25 @@ In this post, we will cover all three of them, implement them in the Internet&am
 <p>All code examples will also have a Rust Playground link, so you can them out as you follow along.</p>
 <p>Without further ado, let&rsquo;s get started.</p>
 <h2 id="lexer">Lexer</h2>
-<p>The lexer takes text and converts it to a list of tokens. A token could be a letter, a word, a number, or a punctuation mark. Tokens have meaning depending on where they are situated in the code, but we will not concern ourselves with that just yet.</p>
-<p>Let&rsquo;s start with a simple program that goes something like this:</p>
+<p>The lexer takes text and converts it to a list of tokens. A token could be a letter, a word, a number, or a punctuation mark. Tokens have meaning depending on their position in the code, but the lexer won&rsquo;t concern itself with syntax: it&rsquo;s only job is to transform text into an allowed list of symbols.</p>
+<h3 id="example">Example</h3>
+<p>Most programming languages allow its users to do math. Let&rsquo;s start building our interpreter with a simple arithmetic example and write a lexer that can handle it.</p>
+<p><em>The code</em></p>
 <pre tabindex="0"><code>1 + 2
-</code></pre><p>The lexer&rsquo;s job is to read this code and produce a sequence of tokens, as follows:</p>
+</code></pre><p>The job of the lexer is to transform this code into the following tokens:</p>
 <pre tabindex="0"><code>Number(1), Plus, Number(2)
-</code></pre><p>While both you and I strongly suspect that this program will add one and two together to produce <code>3</code>, the lexer will not make any assumptions at this stage.</p>
-<p>Let&rsquo;s jump into some code. First, let&rsquo;s define the list of tokens our language will support:</p>
+</code></pre><p>While you probably think that this program will add one and two together and produce <code>3</code>, the lexer is not allowed to make assumptions about syntax or execution of the code.</p>
+<p>Since we&rsquo;re writing our lexer in Rust, let&rsquo;s define an enum that will represent all allowed tokens in our simple language:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#e6db74">/// List of all available tokens in our language.
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span><span style="color:#75715e">#[derive(Debug)]</span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">enum</span> <span style="color:#a6e22e">Token</span> {
 </span></span><span style="display:flex;"><span>    Number(<span style="color:#66d9ef">i64</span>),
 </span></span><span style="display:flex;"><span>    Plus,
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>Keep this list nearby, we&rsquo;ll be adding more tokens to it later as our language evolves. It can only add numbers at the moment, but we&rsquo;ll be adding more features later like control flow with if-statements and for-loops.</p>
+</span></span></code></pre></div><p>This list of tokens is short currently, but as our language evolves, it will get longer and more interesting. Our language can only add numbers at the moment, but we will add more features later, like control flow with <code>if</code> statements and <code>for</code> loops.</p>
 <h3 id="extracting-tokens">Extracting tokens</h3>
-<p>At the very basic level, a token is a single character, like the plus sign (<code>+</code>). Our lexer (like all the others) will therefore process the source code one character at a time.</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#e6db74">/// Lexer takes a string and returns a list of tokens.
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span><span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Lexer</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">&#39;a</span><span style="color:#f92672">&gt;</span> {
+<p>At a base level, a token is a single character, like the plus sign (<code>+</code>). Our lexer will start processing the source code one character at a time.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Lexer</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">&#39;a</span><span style="color:#f92672">&gt;</span> {
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Source code.
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    source: <span style="color:#66d9ef">&amp;</span><span style="color:#a6e22e">&#39;a</span> <span style="color:#66d9ef">str</span>,
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Resulting list of tokens.
@@ -48,74 +49,66 @@ In this post, we will cover all three of them, implement them in the Internet&am
 </span></span><span style="display:flex;"><span>}
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">impl</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">&#39;a</span><span style="color:#f92672">&gt;</span> Lexer<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">&#39;a</span><span style="color:#f92672">&gt;</span> {
-</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">/// Create new lexer for the source code.
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">new</span>(source: <span style="color:#66d9ef">&amp;</span><span style="color:#a6e22e">&#39;a</span> <span style="color:#66d9ef">str</span>) -&gt; <span style="color:#a6e22e">Lexer</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">new</span>(source: <span style="color:#66d9ef">&amp;</span><span style="color:#a6e22e">&#39;a</span> <span style="color:#66d9ef">str</span>) -&gt; <span style="color:#a6e22e">Lexer</span> {
 </span></span><span style="display:flex;"><span>        Lexer {
 </span></span><span style="display:flex;"><span>            source,
 </span></span><span style="display:flex;"><span>            tokens: Vec::new(),
 </span></span><span style="display:flex;"><span>        }
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">/// Convert code into a list of tokens, consuming the lexer.
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">tokens</span>(<span style="color:#66d9ef">mut</span> self) -&gt; Vec<span style="color:#f92672">&lt;</span>Token<span style="color:#f92672">&gt;</span> {
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// Extract tokens one character at a time.
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">for</span> c <span style="color:#66d9ef">in</span> self.source.chars() {
-</span></span><span style="display:flex;"><span>            todo!()
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">/// Extract tokens one character at a time.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">tokens</span>(<span style="color:#f92672">&amp;</span><span style="color:#66d9ef">mut</span> self) -&gt; Vec<span style="color:#f92672">&lt;</span>Token<span style="color:#f92672">&gt;</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">for</span> c <span style="color:#66d9ef">in</span> self.source.chars() {
+</span></span><span style="display:flex;"><span>            todo!(<span style="color:#e6db74">&#34;extract tokens&#34;</span>)
 </span></span><span style="display:flex;"><span>        }
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        self.tokens
+</span></span><span style="display:flex;"><span>        std::mem::take(<span style="color:#f92672">&amp;</span><span style="color:#66d9ef">mut</span> self.tokens)
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>Our language only supports adding numbers, so our tokens can range between <code>0</code> and <code>9</code>, and <code>+</code>:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">tokens</span>(<span style="color:#66d9ef">mut</span> self) -&gt; Vec<span style="color:#f92672">&lt;</span>Token<span style="color:#f92672">&gt;</span> {
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">use</span> Token::<span style="color:#f92672">*</span>;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Extract tokens one character at a time.
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">for</span> c <span style="color:#66d9ef">in</span> self.source.chars() {
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">match</span> c {
-</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#39;0&#39;</span><span style="color:#f92672">..=</span><span style="color:#e6db74">&#39;9&#39;</span> <span style="color:#f92672">=&gt;</span> self.tokens.push(
-</span></span><span style="display:flex;"><span>                Number(c.to_digit(<span style="color:#ae81ff">10</span>).unwrap() <span style="color:#66d9ef">as</span> <span style="color:#66d9ef">i64</span>)
-</span></span><span style="display:flex;"><span>            ),
-</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#39;+&#39;</span> <span style="color:#f92672">=&gt;</span> self.tokens.push(Plus),
-</span></span><span style="display:flex;"><span>            c <span style="color:#f92672">=&gt;</span> todo!(<span style="color:#e6db74">&#34;lexer error, unsupported character: &#39;</span><span style="color:#e6db74">{}</span><span style="color:#e6db74">&#39;&#34;</span>, c),
-</span></span><span style="display:flex;"><span>        }
+</span></span></code></pre></div><p>Since our language only supports adding numbers, our tokens can only range between the numbers <code>0</code> and <code>9</code>, and the <code>+</code> sign:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">for</span> c <span style="color:#66d9ef">in</span> self.source.chars() {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">match</span> c {
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// Convert numbers between 0 and 9 to Rust integers.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#e6db74">&#39;0&#39;</span><span style="color:#f92672">..=</span><span style="color:#e6db74">&#39;9&#39;</span> <span style="color:#f92672">=&gt;</span> self.tokens.push(
+</span></span><span style="display:flex;"><span>            Token::Number(c.to_digit(<span style="color:#ae81ff">10</span>).unwrap() <span style="color:#66d9ef">as</span> <span style="color:#66d9ef">i64</span>)
+</span></span><span style="display:flex;"><span>        ),
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// Convert the plus sign to the plus token.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#e6db74">&#39;+&#39;</span> <span style="color:#f92672">=&gt;</span> self.tokens.push(Token::Plus),
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// Error out on unknown characters.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        c <span style="color:#f92672">=&gt;</span> todo!(<span style="color:#e6db74">&#34;lexer error, unsupported character: &#39;</span><span style="color:#e6db74">{}</span><span style="color:#e6db74">&#39;&#34;</span>, c),
 </span></span><span style="display:flex;"><span>    }
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    self.tokens
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>While simple, this code does a lot. We extract characters from text, interpret their meaning in the context of our code, and produce values that our compiler can understand. The separation of concerns between the lexer and the parser makes building a compiler a lot easier.</p>
-<p>Before writing any more code, we should probably write a simple test to make sure we&rsquo;re on the right track. I&rsquo;m using Rust Playground so we can just write a <code>main</code> function:</p>
+</span></span></code></pre></div><p>While short, this code does quite a bit: it extracts characters from text, interprets their meaning in the context of our language, and produces values that our interpreter can understand. Since parsing text is handled by the lexer, the rest of our interpreter, namely the parser, can only work with a single enum. This separation of concerns makes compilers (and interpreters) easier to write and maintain.</p>
+<p>Lexer code is available <a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2021&amp;gist=158b82429a9d1373db4ff54234790a01">here</a>.</p>
+<h3 id="testing-the-lexer">Testing the lexer</h3>
+<p>Before writing any more code, we should probably write a simple test to make sure we are on the right track. I am writing this in a Rust binary project, so we can just add this to the <code>main</code> function:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">main</span> () {
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> source <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;1 + 2&#34;</span>;
-</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> lexer <span style="color:#f92672">=</span> Lexer::new(source);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> lexer <span style="color:#f92672">=</span> Lexer::new(source);
 </span></span><span style="display:flex;"><span>    println!(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{:?}</span><span style="color:#e6db74">&#34;</span>, lexer.tokens());
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>Everything seems to be in order, let&rsquo;s run our code:</p>
+</span></span></code></pre></div><p>This code compiles fine, so let&rsquo;s try it:</p>
 <pre tabindex="0"><code>thread &#39;main&#39; panicked at src/main.rs:38:22:
 not yet implemented: lexer error, unsupported character: &#39; &#39;
-</code></pre><p>If you have done this before, you probably noticed this beforehand, but for all the beginners this may come as a surprise: the space character (<code> </code>) is also a token which is part of the language syntax. Therefore, the lexer needs to handle it. We do not have a use for the space token yet, beyond separating other tokens, so we will simply ignore it:</p>
+</code></pre><p>If you have done this before, you probably noticed this problem already, but for beginners this may come as a surprise: the space character (<code> </code>) is also a token which is part of the language. Therefore, the lexer needs to handle it. We do not have a use for the &ldquo;space&rdquo; token yet, so we will ignore it for now:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">match</span> c {
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Ignore spaces.
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#e6db74">&#39; &#39;</span> <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">continue</span>,
 </span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;0&#39;</span><span style="color:#f92672">..=</span><span style="color:#e6db74">&#39;9&#39;</span> <span style="color:#f92672">=&gt;</span> self.tokens.push(
-</span></span><span style="display:flex;"><span>        Number(c.to_digit(<span style="color:#ae81ff">10</span>).unwrap() <span style="color:#66d9ef">as</span> <span style="color:#66d9ef">i64</span>)
+</span></span><span style="display:flex;"><span>        Token::Number(c.to_digit(<span style="color:#ae81ff">10</span>).unwrap() <span style="color:#66d9ef">as</span> <span style="color:#66d9ef">i64</span>)
 </span></span><span style="display:flex;"><span>    ),
-</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;+&#39;</span> <span style="color:#f92672">=&gt;</span> self.tokens.push(Plus),
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">&#39;+&#39;</span> <span style="color:#f92672">=&gt;</span> self.tokens.push(Token::Plus),
 </span></span><span style="display:flex;"><span>    c <span style="color:#f92672">=&gt;</span> todo!(<span style="color:#e6db74">&#34;lexer error, unsupported character: &#39;</span><span style="color:#e6db74">{}</span><span style="color:#e6db74">&#39;&#34;</span>, c),
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>Running our lexer now with support for spaces, we are getting the right result:</p>
 <pre tabindex="0"><code>[Number(1), Plus, Number(2)]
-</code></pre><p>As the designer of your own language, you get to decide what goes and what breaks your code. Some languages for example would throw a syntax error if a space was missing (e.g. Python, which uses it for indentation).</p>
-<h3 id="multi-character-tokens">Multi-character tokens</h3>
-<p>We are keeping our language simple on purpose so we can cover the whole process without getting overwhelmed, but before we go to writing the parser, let&rsquo;s add support for multi-character numbers. After all, our language would be pretty silly if it could only count to 9.</p>
-<p>Since our lexer reads the code one character at a time and numbers can effectively be infinitely large, we need to add a buffer to collect digits as we consume them from the input:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#e6db74">/// Lexer takes a string and returns a list of tokens.
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span><span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Lexer</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">&#39;a</span><span style="color:#f92672">&gt;</span> {
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Source code.
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    source: <span style="color:#66d9ef">&amp;</span><span style="color:#a6e22e">&#39;a</span> <span style="color:#66d9ef">str</span>,
-</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Resulting list of tokens.
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    tokens: Vec<span style="color:#f92672">&lt;</span>Token<span style="color:#f92672">&gt;</span>,
+</code></pre><h3 id="multi-character-tokens">Multi-character tokens</h3>
+<p>We are keeping our language simple for now so we can build the entire interpreter in one go, but before we continue to the parser, let&rsquo;s add support for multi-character numbers. Our language would be pretty silly if it could only count to 9.</p>
+<p>Since our lexer reads the code one character at a time, and numbers can be infinitely long, we need to add a buffer to collect digits as we consume them:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">struct</span> <span style="color:#a6e22e">Lexer</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">&#39;a</span><span style="color:#f92672">&gt;</span> {
+</span></span><span style="display:flex;"><span>    source: <span style="color:#66d9ef">&amp;</span><span style="color:#a6e22e">&#39;a</span> <span style="color:#66d9ef">str</span>,
+</span></span><span style="display:flex;"><span>    tokens: Vec<span style="color:#f92672">&lt;</span>Token<span style="color:#f92672">&gt;</span>,
+</span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Buffer for multi-character tokens.
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    buffer: String,
 </span></span><span style="display:flex;"><span>}
@@ -123,9 +116,7 @@ not yet implemented: lexer error, unsupported character: &#39; &#39;
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">impl</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">&#39;a</span><span style="color:#f92672">&gt;</span> Lexer<span style="color:#f92672">&lt;</span><span style="color:#a6e22e">&#39;a</span><span style="color:#f92672">&gt;</span> {
 </span></span><span style="display:flex;"><span>    <span style="color:#e6db74">/// Process a multi-character token stored in the buffer.
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">process_token</span>(<span style="color:#f92672">&amp;</span><span style="color:#66d9ef">mut</span> self) {
-</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">use</span> Token::<span style="color:#f92672">*</span>;
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// Empty buffer means no more tokens in the input.
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// Empty buffer means there is nothing to do here.
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">if</span> self.buffer.is_empty() {
 </span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">return</span>;
 </span></span><span style="display:flex;"><span>        }
@@ -133,14 +124,14 @@ not yet implemented: lexer error, unsupported character: &#39; &#39;
 </span></span><span style="display:flex;"><span>        <span style="color:#75715e">// Use the standard library&#39;s [`str::parse`]
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#75715e">// to convert text to an integer.
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        self.tokens.push(
-</span></span><span style="display:flex;"><span>            Number(self.buffer.as_str().parse().unwrap())
+</span></span><span style="display:flex;"><span>            Token::Number(self.buffer.as_str().parse().unwrap())
 </span></span><span style="display:flex;"><span>        );
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>        <span style="color:#75715e">// Clear the buffer for the next token.
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        self.buffer.clear();
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>Now that we handle multi-character numbers, the space token needs to be handled differently. Instead of just ignoring it, we will process whatever is in the buffer instead:</p>
+</span></span></code></pre></div><p>Now that we handle multi-character numbers, the space character needs to be handled differently. Since space now separates tokens, instead of just ignoring it, we will process whatever is in the buffer:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">for</span> c <span style="color:#66d9ef">in</span> self.source.chars() {
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">match</span> c {
 </span></span><span style="display:flex;"><span>        <span style="color:#75715e">// Spaces separate tokens.
@@ -148,7 +139,7 @@ not yet implemented: lexer error, unsupported character: &#39; &#39;
 </span></span><span style="display:flex;"><span>        <span style="color:#75715e">// Buffer number characters
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#75715e">// instead of parsing them individually.
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#e6db74">&#39;0&#39;</span><span style="color:#f92672">..=</span><span style="color:#e6db74">&#39;9&#39;</span> <span style="color:#f92672">=&gt;</span> self.buffer.push(c),
-</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#39;+&#39;</span> <span style="color:#f92672">=&gt;</span> self.tokens.push(Plus),
+</span></span><span style="display:flex;"><span>        <span style="color:#e6db74">&#39;+&#39;</span> <span style="color:#f92672">=&gt;</span> self.tokens.push(Token::Plus),
 </span></span><span style="display:flex;"><span>        c <span style="color:#f92672">=&gt;</span> todo!(<span style="color:#e6db74">&#34;lexer error, unsupported character: &#39;</span><span style="color:#e6db74">{}</span><span style="color:#e6db74">&#39;&#34;</span>, c),
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>}
@@ -156,23 +147,23 @@ not yet implemented: lexer error, unsupported character: &#39; &#39;
 </span></span><span style="display:flex;"><span><span style="color:#75715e">// Don&#39;t forget to process whatever is in the buffer
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e">// at the end of the input:
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>self.process_token();
-</span></span></code></pre></div><p>Let&rsquo;s change the source code of our program and try the lexer now with actual support for numbers:</p>
+</span></span></code></pre></div><p>Let&rsquo;s add a bigger number to our source code and try the lexer now with actual support for numbers:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">let</span> source <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;21 + 2&#34;</span>;
-</span></span></code></pre></div><p>Interpreting the new code produces the expected stream of tokens:</p>
+</span></span></code></pre></div><p>which produces:</p>
 <pre tabindex="0"><code>[Number(21), Plus, Number(2)]
-</code></pre><p>It may seem like our lexer is still incomplete since we haven&rsquo;t tried adding support for more advanced control flow like <code>if</code> or <code>for</code> instructions, but actually, since it supports parsing multi-character tokens, adding more tokens will be easy. More on that later though, let&rsquo;s move forward with our compiler and build its second component: the parser.</p>
-<p>The full source code for the lexer is available on <a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2021&amp;gist=8f1a2f1b32394bafbcc0a3f5f8a53159">Rust Playground</a>.</p>
+</code></pre><p>This is good enough to handle our simple language. While we may be tempted to add more tokens like <code>if</code>, <code>for</code>, or <code>-</code> to support more features, let&rsquo;s save that for later. By building the entire interpreter first, using the right abstractions, we will be able to easily add language features later.</p>
 <h2 id="parser">Parser</h2>
-<p>The parser takes a list (also called a stream) of tokens and produces an Abstract Syntax Tree. The AST is a structural representation of code: it organizes tokens in such a way that makes sense in the context of the language rules. The AST validates that the code is syntactically correct.</p>
-<p>Before we can build our parser, we need to get a bit more involved in our language design. A parser needs us to have a formal definition of what our language can do. Our example is adding numbers, so let&rsquo;s start with that and add more features as we go.</p>
+<p>The parser takes a list (sometimes called a stream) of tokens and produces an Abstract Syntax Tree. The AST, for short, is a structural representation of the code: it organizes tokens in such a way that makes sense in the context of the language rules. Constructing the AST consequently validates that the code is syntactically correct. When writing code in languages like Rust or Python, syntax errors which we are all too familiar with, are typically thrown by the parser.</p>
+<p>Before we can build our parser, we need to get a bit more involved in our language design. By understanding a bit of theory, we can build the right abstractions early on, and make our job easier later.</p>
 <h3 id="formal-definition">Formal definition</h3>
-<p>A formal definition for our language serves as a blueprint of what our language can do. Our language is pretty simple, so the definition could go something like this:</p>
+<p>A formal definition is a blueprint of valid language syntax. It&rsquo;s only job is to ensure that tokens are presented in the correct order. It does not explain what those tokens mean or do; while the reader could infer that an <code>if</code> statement controls which part of the code is executed, the language designer could make that statement exit the program instead. Of course, that would be somewhat cruel, but the formal definition we are about to write really does not concern itself with how the interpreter chooses to execute the code.</p>
+<p>With that somewhat disturbing knowledge hammered into our minds, let&rsquo;s write something:</p>
 <pre tabindex="0"><code>language = expression
 expression = term operation term | term
 term = value
 value = number
 operation = &#39;+&#39;
-</code></pre><p>Before trying to understand what this means, let&rsquo;s throw in some formal definitions:</p>
+</code></pre><p>Before trying to understand what this means, let&rsquo;s throw in some definitions:</p>
 <table>
 <thead>
 <tr>
@@ -183,92 +174,421 @@ operation = &#39;+&#39;
 <tbody>
 <tr>
 <td>Language</td>
-<td>The programming language we are designing.</td>
+<td>The programming language definition.</td>
 </tr>
 <tr>
 <td>Expression</td>
-<td>A piece of code which when executed produces a single value as a result. Expressions are composed of terms and operations.</td>
+<td>Some code which, when executed, produces a single value as a result.</td>
 </tr>
 <tr>
 <td>Term</td>
-<td>A value, either constant or variable.</td>
+<td>A value, either constant (e.g. <code>21</code>) or variable (<code>source</code>). More on variables later.</td>
 </tr>
 <tr>
 <td>Operation</td>
-<td>An action that combines two expressions into one.</td>
+<td>An action that combines two terms into one.</td>
+</tr>
+<tr>
+<td><code>=</code></td>
+<td>&ldquo;is a&rdquo;</td>
+</tr>
+<tr>
+<td><code>|</code></td>
+<td>&ldquo;or a&rdquo;</td>
 </tr>
 </tbody>
 </table>
-<p>Armed with these, let&rsquo;s go through our language definition line by line.
-W</p>
+<p>Now that we understand the lexicon a bit better, let&rsquo;s read our language definition one line at a time. At the top, we have:</p>
 <pre tabindex="0"><code>language = expression
-</code></pre><p>Our entire language is just one expression. Programs written in this language effectively can contain only one line of code. A bit boring, but we will expand this later quite easily.</p>
+</code></pre><p>Our entire language is one expression. Programs written in our language can effectively contain only one line of code. A bit boring, but we will expand this later quite easily.</p>
+<p>Moving on to the next line:</p>
 <pre tabindex="0"><code>expression = term operation term | term
-</code></pre><p>An expression in our language is either a binary operation, or a single expression. While somewhat confusing at first, this recursive definition is simpler than it appears: it means an expression can be either composed of two expressions joined together by an operation, e.g. addition, or just be an expression by itself, like a constant or a variable. Going down to the next line, things are starting to make sense:</p>
-<pre tabindex="0"><code>expression = term
-</code></pre><p>An expression can just be a term. Since a term can be a constant, an expression can simply be a number, like <code>12</code>, or an operation on two terms, like our original example: <code>21 + 2</code>.</p>
-<p>The next 3 lines complete our formal definition:</p>
+</code></pre><p>An expression in our language is either a binary operation on two terms, or a single term. For example, our code above is an expression of two terms joined together with a binary operator: the term on the left, <code>21</code>, is joined using the addition operator (<code>+</code>) to the right term, <code>2</code>. Alternatively, if we just typed <code>21</code> into our interpreter, by itself that expression would evaluate to <code>21</code>.</p>
+<p>Moving on to the next line:</p>
 <pre tabindex="0"><code>term = value
-value = number
-operation = &#39;+&#39;
-</code></pre><p>A term can be a value, a value is a number, and an operation can be an addition. Any line of code we write in our language can be represented using this formal definition. So, to make a parser for our language, we just need to implement this definition.</p>
-<h3 id="basic-blocks">Basic blocks</h3>
-<p>Starting from the bottom, let&rsquo;s implement the operation, value and term:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#75715e">#[derive(Debug)]</span>
+</code></pre><p>A term in our language is a value. This may seem redundant; why not just use <code>value</code> in the <code>expression</code> definition? Later on, we will be adding additional types of terms, like a <code>variable</code>, so it is a good idea to keep our language definition flexible.</p>
+<p>Moving down to the next line, the <code>value</code> is expanded to a number:</p>
+<pre tabindex="0"><code>value = number
+</code></pre><p>Our simple language only allows numbers, but soon enough we will add strings, lists and hashes. We will be able to define operations between values of different types, e.g. addition between a list and a string, and our language will really take form.</p>
+<p>Finally, our only allowed operation in, addition, is specified one the last line:</p>
+<pre tabindex="0"><code>operation = &#39;+&#39;
+</code></pre><h4 id="parsing-our-example">Parsing our example</h4>
+<p>Now that we have formal definitions, let&rsquo;s parse our example manually:</p>
+<pre tabindex="0"><code>1 + 2
+</code></pre><p>when parsed should produce the following AST:</p>
+<p><img src="ast.png" alt="AST"></p>
+<h3 id="parsing-expressions">Parsing expressions</h3>
+<p>Now that we have a formal definition and an AST, let&rsquo;s parse our example, starting at the bottom:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#e6db74">/// An operation. Only addition currently supported.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span><span style="color:#75715e">#[derive(Debug)]</span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">enum</span> <span style="color:#a6e22e">Operation</span> {
-</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">/// Addition operation.
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    Addition,
+</span></span><span style="display:flex;"><span>    Addition,
 </span></span><span style="display:flex;"><span>}
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">#[derive(Debug)]</span>
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">/// A constant value. Currently, only numbers are supported.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span><span style="color:#75715e">#[derive(Debug)]</span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">enum</span> <span style="color:#a6e22e">Value</span> {
-</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">/// A value can be a number. Our language translates
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    <span style="color:#e6db74">/// all numbers to 64-bit signed integers, which makes things easier,
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    <span style="color:#e6db74">/// but we can add more types later.
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    Number(<span style="color:#66d9ef">i64</span>),
+</span></span><span style="display:flex;"><span>    Number(<span style="color:#66d9ef">i64</span>),
 </span></span><span style="display:flex;"><span>}
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#75715e">#[derive(Debug)]</span>
+</span></span><span style="display:flex;"><span><span style="color:#e6db74">/// Expression term. Currently, only values are supported.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span><span style="color:#75715e">#[derive(Debug)]</span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">enum</span> <span style="color:#a6e22e">Term</span> {
-</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">/// A term is just a constant value.
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    Value(Value),
+</span></span><span style="display:flex;"><span>    Value(Value),
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><h3 id="expression">Expression</h3>
-<p>Now that we have our basic building blocks, let&rsquo;s define an expression:</p>
+</span></span></code></pre></div><p>With the basic building blocks of our language ready, let&rsquo;s define an expression. If we recall the formal definition, an expression can either be a binary operation between two terms, or a just a term:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#75715e">#[derive(Debug)]</span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">enum</span> <span style="color:#a6e22e">Expression</span> {
-</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">/// A single term.
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    Term(Term),
-</span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#e6db74">/// A binary operation.
-</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    BinaryOp {
-</span></span><span style="display:flex;"><span>        left: Box<span style="color:#f92672">&lt;</span>Expression<span style="color:#f92672">&gt;</span>,
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    Binary {
+</span></span><span style="display:flex;"><span>        left: <span style="color:#a6e22e">Term</span>,
 </span></span><span style="display:flex;"><span>        op: <span style="color:#a6e22e">Operation</span>,
-</span></span><span style="display:flex;"><span>        right: Box<span style="color:#f92672">&lt;</span>Expression<span style="color:#f92672">&gt;</span>,
+</span></span><span style="display:flex;"><span>        right: <span style="color:#a6e22e">Term</span>,
 </span></span><span style="display:flex;"><span>    },
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">/// Just a term by itself.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    Term(Term),
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>Just like the formal definition, an expression can either be a term or a binary operation on two expressions. In Rust, recursive enum definitions require the use of a <code>Box</code> to make sure the type has a finite size on the stack; the <code>Box</code> is a fixed-size pointer to an object on the heap.</p>
-<p>That&rsquo;s not a lot of code given our long theoretical explanation, but that&rsquo;s kind of the point: once we understand the theory, implementing the parser becomes straight forward.</p>
-<h3 id="process-tokens">Process tokens</h3>
-<p>Just like the lexer, the parser processes tokens one at a time. Since our language can only have one expression for now, we can implement the parser directly on the expression enum:</p>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">use</span> std::iter::{Peekable, Iterator};
+</span></span></code></pre></div><p>That&rsquo;s not a lot of code given our long theoretical explanation, but that was the goal: as we understood theory, implementing the parser became easy.</p>
+<h3 id="parse-tokens">Parse tokens</h3>
+<p>Just like the lexer, a parser processes tokens one at a time. Since our language only has expressions, to have a complete language parser, we just need to implement expression parsing:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">use</span> std::iter::Iterator;
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">impl</span> Expression {
 </span></span><span style="display:flex;"><span>    <span style="color:#e6db74">/// Given a stream of tokens, parse a single expression.
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">parse</span>(
-</span></span><span style="display:flex;"><span>        stream: <span style="color:#66d9ef">&amp;</span><span style="color:#a6e22e">mut</span> Peekable<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">impl</span> Iterator<span style="color:#f92672">&lt;</span>Item <span style="color:#f92672">=</span> Token<span style="color:#f92672">&gt;&gt;</span>
+</span></span><span style="display:flex;"><span>        stream: <span style="color:#66d9ef">&amp;</span><span style="color:#a6e22e">mut</span> <span style="color:#66d9ef">impl</span> Iterator<span style="color:#f92672">&lt;</span>Item <span style="color:#f92672">=</span> Token<span style="color:#f92672">&gt;</span>
 </span></span><span style="display:flex;"><span>    ) -&gt; <span style="color:#a6e22e">Expression</span> {
-</span></span><span style="display:flex;"><span>        todo!()
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">let</span> left <span style="color:#f92672">=</span> Self::term(stream);
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">let</span> operation <span style="color:#f92672">=</span> stream.next();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">match</span> operation {
+</span></span><span style="display:flex;"><span>            Some(operation) <span style="color:#f92672">=&gt;</span> {
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">let</span> op <span style="color:#f92672">=</span> <span style="color:#66d9ef">match</span> operation {
+</span></span><span style="display:flex;"><span>                    Token::Plus <span style="color:#f92672">=&gt;</span> Operation::Addition,
+</span></span><span style="display:flex;"><span>                    _ <span style="color:#f92672">=&gt;</span> panic!(
+</span></span><span style="display:flex;"><span>                        <span style="color:#e6db74">&#34;syntax error, expected operation, got: </span><span style="color:#e6db74">{:?}</span><span style="color:#e6db74">&#34;</span>,
+</span></span><span style="display:flex;"><span>                        operation
+</span></span><span style="display:flex;"><span>                    ),
+</span></span><span style="display:flex;"><span>                };
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">let</span> right <span style="color:#f92672">=</span> Self::term(stream);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                Expression::Binary {
+</span></span><span style="display:flex;"><span>                    left,
+</span></span><span style="display:flex;"><span>                    op,
+</span></span><span style="display:flex;"><span>                    right,
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>            },
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            None <span style="color:#f92672">=&gt;</span> Expression::Term(left),
+</span></span><span style="display:flex;"><span>        }
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#e6db74">/// Given a stream of tokens, parse a single term.
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">term</span>(
-</span></span><span style="display:flex;"><span>        stream: <span style="color:#66d9ef">&amp;</span><span style="color:#a6e22e">mut</span> Peekable<span style="color:#f92672">&lt;</span><span style="color:#66d9ef">impl</span> Iterator<span style="color:#f92672">&lt;</span>Item <span style="color:#f92672">=</span> Token<span style="color:#f92672">&gt;&gt;</span>
-</span></span><span style="display:flex;"><span>    ) -&gt; <span style="color:#a6e22e">Expression</span> {
-</span></span><span style="display:flex;"><span>        todo!()
+</span></span><span style="display:flex;"><span>        stream: <span style="color:#66d9ef">&amp;</span><span style="color:#a6e22e">mut</span> <span style="color:#66d9ef">impl</span> Iterator<span style="color:#f92672">&lt;</span>Item <span style="color:#f92672">=</span> Token<span style="color:#f92672">&gt;</span>
+</span></span><span style="display:flex;"><span>    ) -&gt; <span style="color:#a6e22e">Term</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">let</span> token <span style="color:#f92672">=</span> stream.next().expect(<span style="color:#e6db74">&#34;expected a token&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">match</span> token {
+</span></span><span style="display:flex;"><span>            Token::Number(n) <span style="color:#f92672">=&gt;</span> Term::Value(Value::Number(n)),
+</span></span><span style="display:flex;"><span>            _ <span style="color:#f92672">=&gt;</span> panic!(<span style="color:#e6db74">&#34;syntax error, expected term, got: </span><span style="color:#e6db74">{:?}</span><span style="color:#e6db74">&#34;</span>, token),
+</span></span><span style="display:flex;"><span>        }
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div>]]></content>
+</span></span></code></pre></div><h3 id="testing-the-parser">Testing the parser</h3>
+<p>Since we have source code and a lexer already, we can add the parser to it pretty easily. Going back to our <code>main</code> function:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">main</span> () {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> source <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;21 + 2&#34;</span>;
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> lexer <span style="color:#f92672">=</span> Lexer::new(source);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> tokens <span style="color:#f92672">=</span> lexer.tokens();
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> expression <span style="color:#f92672">=</span> Expression::parse(<span style="color:#f92672">&amp;</span><span style="color:#66d9ef">mut</span> tokens.into_iter());
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    println!(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{:#?}</span><span style="color:#e6db74">&#34;</span>, expression);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>which produces:</p>
+<pre tabindex="0"><code>Binary {
+    left: Value(
+        Number(
+            21,
+        ),
+    ),
+    op: Addition,
+    right: Value(
+        Number(
+            2,
+        ),
+    ),
+}
+</code></pre><p>That looks about right. Let&rsquo;s recap. We have converted text into tokens, and parsed those tokens with our own parser, creating an Abstract Syntax Tree, validating syntax using our formal language definition. That was a lot of work just to add two numbers together, but the payoff is finally here. Let&rsquo;s bring our own interpreter to life and execute our AST.</p>
+<p>Source code for the parser is <a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2021&amp;gist=047a475186aa72ad5dd080dc00355a57">here</a>.</p>
+<h2 id="executor">Executor</h2>
+<p>An executor, unlike a compiler, takes the intermediary representation of the code (the AST) and executes it directly on the machine where the code is saved. A compiler, on the other hand, translates the AST into machine code, or another language, which is then executed by either another interpreter or another machine.</p>
+<p>For example, if you are familiar with TypeScript, the TypeScript compiler translates source code into JavaScript, which is then executed by the V8 interpreter. To make things even more complicated (some would say interesting), V8 can also act as a compiler of its own, by translating JavaScript into assembly and executing it directly on the CPU. This is called JIT (Just-in-Time) compilation, a topic we could explore at some other time.</p>
+<p>Since our language is written in Rust, our interpreter will be able to execute code on any machine where Rust is supported. This makes our language pretty flexible, since Rust can run on all Intel, AMD, and ARM CPUs, Linux, Windows and Mac. For example, another popular interpreted language, Python, is actually written in C, which makes it even more portable.</p>
+<p>That is enough information I think. Let&rsquo;s get to business of executing our code.</p>
+<h3 id="evaluating-expressions">Evaluating expressions</h3>
+<p>Our expressions, as they currently stand, only have two variants: binary operation and a single term. Both need to have an execution path defined, so let&rsquo;s handle them both in one simple function:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">impl</span> Expression {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">evaluate</span>(<span style="color:#f92672">&amp;</span>self) -&gt; <span style="color:#a6e22e">Value</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">match</span> self {
+</span></span><span style="display:flex;"><span>            Expression::Term(Term::Value(value)) <span style="color:#f92672">=&gt;</span> value.clone(),
+</span></span><span style="display:flex;"><span>            Expression::Binary {
+</span></span><span style="display:flex;"><span>                left: <span style="color:#a6e22e">Term</span>::Value(left),
+</span></span><span style="display:flex;"><span>                op,
+</span></span><span style="display:flex;"><span>                right: <span style="color:#a6e22e">Term</span>::Value(right)
+</span></span><span style="display:flex;"><span>            } <span style="color:#f92672">=&gt;</span> {
+</span></span><span style="display:flex;"><span>                <span style="color:#66d9ef">match</span> op {
+</span></span><span style="display:flex;"><span>                    Operation::Addition <span style="color:#f92672">=&gt;</span> left.clone() <span style="color:#f92672">+</span> right.clone(),
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>            },
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Looking back at our formal definition, an expression is some code that, when executed, returns a single value. So, the <code>evaluate</code> method here takes an expression and has to return a <code>Value</code>. The first kind of expression, a single term, is easy to execute: it just returns whatever value it is holding.</p>
+<p>The binary operation is only slightly more involved. To evaluate it, we take the left side and join it with the right side using the specified operation. Since we currently support only addition, the operation we are implementing is simple: we add the two values together.</p>
+<p>Compiling this code, we get a couple errors:</p>
+<pre tabindex="0"><code>value.clone(),
+^^^^^^^^^^^^^ expected `Value`, found `&amp;Value
+
+note: `Value` does not implement `Clone`, so `&amp;Value` was cloned instead
+</code></pre><p>and</p>
+<pre tabindex="0"><code>cannot add `Value` to `Value`
+
+note: an implementation of `Add` might be missing for `Value`
+</code></pre><p>The first one is easy to fix. Let&rsquo;s add a <code>Clone</code> implementation to our <code>Value</code> enum:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#75715e">#[derive(Debug, Clone)]</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">enum</span> <span style="color:#a6e22e">Value</span> {
+</span></span><span style="display:flex;"><span>    Number(<span style="color:#66d9ef">i64</span>),
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>The second error asks us to explain to the Rust compiler how to add two <code>Value</code> enums together. The idiomatic way to do this in Rust is to implement the <code>std::ops::Add</code> trait, which we can do as follows:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">use</span> std::ops::Add;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">impl</span> Add <span style="color:#66d9ef">for</span> Value {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Output</span> <span style="color:#f92672">=</span> Value;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">add</span>(self, other: <span style="color:#a6e22e">Value</span>) -&gt; <span style="color:#a6e22e">Value</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">match</span> (self, other) {
+</span></span><span style="display:flex;"><span>            (Value::Number(a), Value::Number(b)) <span style="color:#f92672">=&gt;</span> Value::Number(a <span style="color:#f92672">+</span> b),
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Going back to our <code>main</code> function, let&rsquo;s evaluate our example:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">main</span> () {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> source <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;21 + 2&#34;</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Parse the code into tokens.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> lexer <span style="color:#f92672">=</span> Lexer::new(source);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> tokens <span style="color:#f92672">=</span> lexer.tokens();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Parse the tokens into an AST.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">let</span> expression <span style="color:#f92672">=</span> Expression::parse(<span style="color:#f92672">&amp;</span><span style="color:#66d9ef">mut</span> tokens.into_iter());
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Execute the AST producing a single value.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">let</span> result <span style="color:#f92672">=</span> expression.evaluate();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    println!(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{:?}</span><span style="color:#e6db74">&#34;</span>, result);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Running our interpreter, we finally get:</p>
+<pre tabindex="0"><code>Number(23)
+</code></pre><p>That was quite a journey, but we are finally here. With only 175 lines of code, we managed to read text and add two numbers together. Talk about doing things the hard way, but it is definitely more fun and informative than just typing them into a Google search field.</p>
+<p>Source code is available <a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2021&amp;gist=8c50fd21a8b49b92005addc503bf22e6">here</a>.</p>
+<h2 id="quick-recap">Quick recap</h2>
+<p>Before going further, let&rsquo;s do a quick recap.</p>
+<p>First, we built a lexer, which takes text and converts it to a list of predefined tokens.  Second, we wrote a parser which takes that list and converts it to an Abstract Syntax Tree. The parser validates language syntax, and creates an intermediary representation of the source code.</p>
+<p>Lastly, we wrote an executor that takes the AST and executes it to produce a single value. Our executor is written in Rust, so it can run our code on any machine supported by the Rust compiler.</p>
+<p>This was great and all, but it is hard to see why this was necessary. Well, let&rsquo;s shake things up and add support for strings.</p>
+<h2 id="adding-strings">Adding strings</h2>
+<p>A string is a sequence of characters, which when interpreted, is represented as a value. For example, <code>&quot;hello world&quot;</code> is a string. How our language represents strings is completely up to us, and as the language designer you get to decide how you want this to work. For example, strings in C are placed between double quotes. Python, on the other hand, allows single, double, and even triple single or double quotes:</p>
+<ul>
+<li><code>'this is a string'</code></li>
+<li><code>&quot;this is also a string&quot;</code></li>
+<li><code>'''this is a multi-line string'''</code></li>
+<li><code>&quot;&quot;&quot;this is also a multi-line string&quot;&quot;&quot;</code></li>
+</ul>
+<p>To support strings, we will need to make modifications at all 3 levels of our interpreter. We need to add support for parsing strings to the lexer, for representing strings in the AST in the parser, and finally executing operations on strings in the executor.</p>
+<h3 id="lexer-1">Lexer</h3>
+<p>The lexer gets to decide how strings are represented in code. Our lexer will follow the C string convention and only allow strings between double quotes. First, let&rsquo;s modify our lexicon to add a string token:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#75715e">#[derive(Debug)]</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">enum</span> <span style="color:#a6e22e">Token</span> {
+</span></span><span style="display:flex;"><span>    Number(<span style="color:#66d9ef">i64</span>),
+</span></span><span style="display:flex;"><span>    Plus,
+</span></span><span style="display:flex;"><span>    String(String),
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>With that small modification out of the way, let&rsquo;s modify the lexer <code>tokens</code> method slightly to handle parsing strings:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">impl</span><span style="color:#f92672">&lt;</span><span style="color:#a6e22e">&#39;a</span><span style="color:#f92672">&gt;</span> Lexer {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">tokens</span>(<span style="color:#f92672">&amp;</span><span style="color:#66d9ef">mut</span> self) -&gt; Vec<span style="color:#f92672">&lt;</span>Token<span style="color:#f92672">&gt;</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// Create an iterator over the source code,
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#75715e">// one character at a time.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> chars <span style="color:#f92672">=</span> self.source.chars();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">while</span> <span style="color:#66d9ef">let</span> Some(c) <span style="color:#f92672">=</span> chars.next() {
+</span></span><span style="display:flex;"><span>            <span style="color:#66d9ef">match</span> c {
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#39; &#39;</span> <span style="color:#f92672">=&gt;</span> self.process_token(),
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#39;0&#39;</span><span style="color:#f92672">..=</span><span style="color:#e6db74">&#39;9&#39;</span> <span style="color:#f92672">=&gt;</span> self.buffer.push(c),
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#39;+&#39;</span> <span style="color:#f92672">=&gt;</span> self.tokens.push(Token::Plus),
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                <span style="color:#75715e">// Double quote indicating the start of a string.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>                <span style="color:#e6db74">&#39;&#34;&#39;</span> <span style="color:#f92672">=&gt;</span> {
+</span></span><span style="display:flex;"><span>                    <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> string <span style="color:#f92672">=</span> String::new();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                    <span style="color:#75715e">// Consume from the same iterator,
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>                    <span style="color:#75715e">// moving the lexer forward in the text stream.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>                    <span style="color:#66d9ef">while</span> <span style="color:#66d9ef">let</span> Some(c) <span style="color:#f92672">=</span> chars.next() {
+</span></span><span style="display:flex;"><span>                        <span style="color:#66d9ef">match</span> c {
+</span></span><span style="display:flex;"><span>                            <span style="color:#75715e">// Closing double quote ends the string.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>                            <span style="color:#e6db74">&#39;&#34;&#39;</span> <span style="color:#f92672">=&gt;</span> <span style="color:#66d9ef">break</span>,
+</span></span><span style="display:flex;"><span>                            _ <span style="color:#f92672">=&gt;</span> string.push(c),
+</span></span><span style="display:flex;"><span>                        }
+</span></span><span style="display:flex;"><span>                    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                    self.tokens.push(Token::String(string));
+</span></span><span style="display:flex;"><span>                }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>                c <span style="color:#f92672">=&gt;</span> todo!(<span style="color:#e6db74">&#34;lexer error, unsupported character: &#39;</span><span style="color:#e6db74">{}</span><span style="color:#e6db74">&#39;&#34;</span>, c),
+</span></span><span style="display:flex;"><span>            }
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// Don&#39;t forget to process whatever is in the buffer.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        self.process_token();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// Return the list of tokens, emptying the lexer.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        std::mem::take(<span style="color:#f92672">&amp;</span><span style="color:#66d9ef">mut</span> self.tokens)
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Looks good enough for now, let&rsquo;s test it with a modification to our <code>main</code> function. I&rsquo;m removing code that parses and evaluates this expression for now, since we haven&rsquo;t added support for strings into the parser yet:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">main</span> () {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> source <span style="color:#f92672">=</span> <span style="color:#e6db74">r</span><span style="color:#e6db74">#&#34;21 + &#34;hello world&#34; + 2&#34;#</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Parse the code into tokens.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> lexer <span style="color:#f92672">=</span> Lexer::new(source);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> tokens <span style="color:#f92672">=</span> lexer.tokens();
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    println!(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{:?}</span><span style="color:#e6db74">&#34;</span>, tokens);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>which produces:</p>
+<pre tabindex="0"><code>[Number(21), Plus, String(&#34;hello world&#34;), Plus, Number(2)]
+</code></pre><p>While this may not make much sense yet in the context of our language, the lexer does not care and produces a valid list of tokens. Good stuff, let&rsquo;s add the string into our Abstract Syntax Tree.</p>
+<h3 id="parser-1">Parser</h3>
+<p>The parser operates with values, so we need to add a string value to our <code>Value</code> enum first:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#75715e">#[derive(Debug, Clone)]</span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">enum</span> <span style="color:#a6e22e">Value</span> {
+</span></span><span style="display:flex;"><span>    Number(<span style="color:#66d9ef">i64</span>),
+</span></span><span style="display:flex;"><span>    <span style="color:#e6db74">/// A value storing a string.
+</span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span>    String(String),
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Compiling this will quickly produce an error since the <code>Value</code> enum is used inside the <code>std::ops::Add</code> trait implementation. Let&rsquo;s add a <code>todo</code> there for now, we are not sure yet what operations we want to support on strings:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">impl</span> Add <span style="color:#66d9ef">for</span> Value {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Output</span> <span style="color:#f92672">=</span> Value;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">add</span>(self, other: <span style="color:#a6e22e">Value</span>) -&gt; <span style="color:#a6e22e">Value</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">match</span> (self, other) {
+</span></span><span style="display:flex;"><span>            (Value::Number(a), Value::Number(b)) <span style="color:#f92672">=&gt;</span> Value::Number(a <span style="color:#f92672">+</span> b),
+</span></span><span style="display:flex;"><span>            (a, b) <span style="color:#f92672">=&gt;</span> todo!(
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;syntax error, &#39;+&#39; between </span><span style="color:#e6db74">{:?}</span><span style="color:#e6db74"> and </span><span style="color:#e6db74">{:?}</span><span style="color:#e6db74"> not supported&#34;</span>,
+</span></span><span style="display:flex;"><span>                a, b
+</span></span><span style="display:flex;"><span>            ),
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>which now compiles, but if you attempt to parse this expression, you will still get a syntax error. Let&rsquo;s continue modifying the parser, and add support for parsing the <code>Token::String</code> token. <code>&quot;hello world&quot;</code> is a term, just like a number, so modifying term parsing should do the trick:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">impl</span> Expression {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">term</span>(stream: <span style="color:#66d9ef">&amp;</span><span style="color:#a6e22e">mut</span> <span style="color:#66d9ef">impl</span> Iterator<span style="color:#f92672">&lt;</span>Item <span style="color:#f92672">=</span> Token<span style="color:#f92672">&gt;</span>) -&gt; <span style="color:#a6e22e">Term</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">let</span> token <span style="color:#f92672">=</span> stream.next().expect(<span style="color:#e6db74">&#34;expected a token&#34;</span>);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">match</span> token {
+</span></span><span style="display:flex;"><span>            Token::Number(n) <span style="color:#f92672">=&gt;</span> Term::Value(Value::Number(n)),
+</span></span><span style="display:flex;"><span>            Token::String(s) <span style="color:#f92672">=&gt;</span> Term::Value(Value::String(s)),
+</span></span><span style="display:flex;"><span>            _ <span style="color:#f92672">=&gt;</span> panic!(<span style="color:#e6db74">&#34;syntax error, expected term, got: </span><span style="color:#e6db74">{:?}</span><span style="color:#e6db74">&#34;</span>, token),
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Adding back parsing to <code>main</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">main</span> () {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> source <span style="color:#f92672">=</span> <span style="color:#e6db74">r</span><span style="color:#e6db74">#&#34;21 + &#34;hello world&#34;&#34;#</span>;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Parse the code into tokens.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">let</span> <span style="color:#66d9ef">mut</span> lexer <span style="color:#f92672">=</span> Lexer::new(source);
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> tokens <span style="color:#f92672">=</span> lexer.tokens();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Parse the tokens into an AST.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">let</span> expression <span style="color:#f92672">=</span> Expression::parse(<span style="color:#f92672">&amp;</span><span style="color:#66d9ef">mut</span> tokens.into_iter());
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    println!(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{:#?}</span><span style="color:#e6db74">&#34;</span>, expression);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#75715e">// Execute the AST producing a single value.
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    <span style="color:#66d9ef">let</span> result <span style="color:#f92672">=</span> expression.evaluate();
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    println!(<span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{:?}</span><span style="color:#e6db74">&#34;</span>, result);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>we get:</p>
+<pre tabindex="0"><code>Binary {
+    left: Value(
+        Number(
+            21,
+        ),
+    ),
+    op: Addition,
+    right: Value(
+        String(
+            &#34;hello world&#34;,
+        ),
+    ),
+}
+
+thread &#39;main&#39; panicked at src/main.rs:101:23:
+
+not yet implemented:
+
+syntax error, addition between Number(21)
+and String(&#34;hello world&#34;) not supported
+</code></pre><p>Very cool, our parser can now build Abstract Syntax Trees which contain string tokens. You will note I removed the leftmost term (<code>+ 2</code>) from the expression. Our parser can only parse expressions with two terms currently. We will add support for unlimited terms later on, and that is when all these abstractions will really worthwhile.</p>
+<p>That being said, our interpreter is still not working. That is expected; we have not added support for string-based operations yet. This is where our language can become unique and interesting.</p>
+<h3 id="syntactic-sugar">Syntactic sugar</h3>
+<p>Open up a Python interpreter and try running our code as is:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#ae81ff">21</span> <span style="color:#f92672">+</span> <span style="color:#e6db74">&#34;hello world&#34;</span>
+</span></span></code></pre></div><p>You will get this error:</p>
+<pre tabindex="0"><code>TypeError: unsupported operand type(s) for +: &#39;int&#39; and &#39;str&#39;
+</code></pre><p>That makes sense for Python, but what if we wanted to support this operation in our language, what would we make it do? Instead of throwing a syntax error, we could conceivably just convert the number to a string and concatenate the two together. Python forces you to write this out explicitly, e.g. <code>str(21) + &quot;hello world&quot;</code>, but we could do this automatically.</p>
+<p>Doing an operation automatically because it is the most common and desired outcome is called &ldquo;syntactic sugar&rdquo;. The language designer makes it easy for language users to write code by executing some implied operations automatically. Going back to Python, if you run:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#e6db74">&#34;hello&#34;</span> <span style="color:#f92672">*</span> <span style="color:#ae81ff">3</span>
+</span></span></code></pre></div><p>you will get a valid result:</p>
+<pre tabindex="0"><code>&#34;hellohellohello&#34;
+</code></pre><p>So the syntactic sugar for string multiplication by a number is available. We will add this to our language as well, but let&rsquo;s start with the basics first.</p>
+<p>Going back to our syntax error, let&rsquo;s add support for string and number concatenation:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">impl</span> Add <span style="color:#66d9ef">for</span> Value {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">type</span> <span style="color:#a6e22e">Output</span> <span style="color:#f92672">=</span> Value;
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">add</span>(self, other: <span style="color:#a6e22e">Value</span>) -&gt; <span style="color:#a6e22e">Value</span> {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">match</span> (self, other) {
+</span></span><span style="display:flex;"><span>            (Value::Number(a), Value::Number(b)) <span style="color:#f92672">=&gt;</span> Value::Number(a <span style="color:#f92672">+</span> b),
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// Supports 21 + &#34;hello world&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>            (
+</span></span><span style="display:flex;"><span>                Value::Number(a),
+</span></span><span style="display:flex;"><span>                Value::String(s),
+</span></span><span style="display:flex;"><span>            ) <span style="color:#f92672">=&gt;</span> Value::String(a.to_string() <span style="color:#f92672">+</span> <span style="color:#f92672">&amp;</span>s),
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e">// Supports &#34;hello world&#34; + 21
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>            (
+</span></span><span style="display:flex;"><span>                Value::String(s),
+</span></span><span style="display:flex;"><span>                Value::Number(a),
+</span></span><span style="display:flex;"><span>            ) <span style="color:#f92672">=&gt;</span> Value::String(s <span style="color:#f92672">+</span> a.to_string().as_str()),
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>            (a, b) <span style="color:#f92672">=&gt;</span> todo!(
+</span></span><span style="display:flex;"><span>                <span style="color:#e6db74">&#34;syntax error, &#39;+&#39; between </span><span style="color:#e6db74">{:?}</span><span style="color:#e6db74"> and </span><span style="color:#e6db74">{:?}</span><span style="color:#e6db74"> not supported&#34;</span>,
+</span></span><span style="display:flex;"><span>                a, b
+</span></span><span style="display:flex;"><span>            ),
+</span></span><span style="display:flex;"><span>        }
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>Running our interpreter now, we get:</p>
+<pre tabindex="0"><code>String(&#34;21hello world&#34;)
+</code></pre><p>Now we are cooking with gas! Our language has a feature some other language does not, and we have implemented it from scratch in Rust. Source code available <a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2021&amp;gist=b2cf0b7d4b5d72dc060f096404014753">here</a>.</p>
+<p>Last but not least, let&rsquo;s update our language formal definition to include the change we just made:</p>
+<pre tabindex="0"><code>value = number | string
+</code></pre>]]></content>
         </item>
         
         <item>
