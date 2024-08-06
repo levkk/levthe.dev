@@ -1,22 +1,144 @@
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-    <channel>
-        <title>Posts on Lev&#39;s blog</title>
-        <link>http://localhost:1313/posts/</link>
-        <description>Recent content in Posts on Lev&#39;s blog</description>
-        <generator>Hugo -- gohugo.io</generator>
-        <language>en-us</language>
-        <lastBuildDate>Thu, 01 Aug 2024 13:33:45 -0400</lastBuildDate>
-        <atom:link href="http://localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
+<!DOCTYPE html>
+<html lang="en">
+    <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+        <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="author" content="">
+<meta name="description" content="Creating your own programming language is an exciting and eye-opening experience. As coders, we rarely if ever get a say in how our tools work. Languages like Python, Ruby, C/C&#43;&#43; and even Rust have been around for a while and are used by millions. Therefore, adding a feature we want or removing an annoyance is often a multi-year process that goes nowhere.
+Designing your own language however, gives you the freedom to do whatever you want." />
+<meta name="keywords" content="" />
+<meta name="robots" content="noodp" />
+<meta name="theme-color" content="" />
+<link rel="canonical" href="http://localhost:1313/posts/language-interpreter-from-scratch-part-1/" />
+
+
+    <title>
         
-        <item>
-            <title>Language interpreter from scratch in Rust: Part 1 of many</title>
-            <link>http://localhost:1313/posts/language-interpreter-from-scratch-part-1/</link>
-            <pubDate>Thu, 01 Aug 2024 13:33:45 -0400</pubDate>
+            Language interpreter from scratch in Rust: Part 1 of many :: Lev&#39;s blog 
+        
+    </title>
+
+
+
+
+
+<link rel="stylesheet" href="/main.949191c1dcc9c4a887997048b240354e47152016d821198f89448496ba42e491.css" integrity="sha256-lJGRwdzJxKiHmXBIskA1TkcVIBbYIRmPiUSElrpC5JE=">
+
+
+
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <meta name="msapplication-TileColor" content="">
+
+
+
+  <meta itemprop="name" content="Language interpreter from scratch in Rust: Part 1 of many">
+  <meta itemprop="description" content="Creating your own programming language is an exciting and eye-opening experience. As coders, we rarely if ever get a say in how our tools work. Languages like Python, Ruby, C/C&#43;&#43; and even Rust have been around for a while and are used by millions. Therefore, adding a feature we want or removing an annoyance is often a multi-year process that goes nowhere.
+Designing your own language however, gives you the freedom to do whatever you want.">
+  <meta itemprop="datePublished" content="2024-08-01T13:33:45-04:00">
+  <meta itemprop="dateModified" content="2024-08-01T13:33:45-04:00">
+  <meta itemprop="wordCount" content="5395">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Language interpreter from scratch in Rust: Part 1 of many">
+  <meta name="twitter:description" content="Creating your own programming language is an exciting and eye-opening experience. As coders, we rarely if ever get a say in how our tools work. Languages like Python, Ruby, C/C&#43;&#43; and even Rust have been around for a while and are used by millions. Therefore, adding a feature we want or removing an annoyance is often a multi-year process that goes nowhere.
+Designing your own language however, gives you the freedom to do whatever you want.">
+
+
+
+
+
+
+
+    <meta property="article:published_time" content="2024-08-01 13:33:45 -0400 -0400" />
+
+
+
+
+
+
+
+
+
+
+
+    </head>
+
+    
+        <body>
+    
+    
+        <div class="container">
+            <header class="header">
+    <span class="header__inner">
+        <a href="/" style="text-decoration: none;">
+    <div class="logo">
+        
+            <span class="logo__mark">></span>
+            <span class="logo__text ">
+                Lev's blog</span>
             
-            <guid>http://localhost:1313/posts/language-interpreter-from-scratch-part-1/</guid>
-            <description>Creating your own programming language is an exciting and eye-opening experience. As coders, we rarely if ever get a say in how our tools work. Languages like Python, Ruby, C/C++ and even Rust have been around for a while and are used by millions. Therefore, adding a feature we want or removing an annoyance is often a multi-year process that goes nowhere.
-Designing your own language however, gives you the freedom to do whatever you want.</description>
-            <content type="html"><![CDATA[<p>Creating your own programming language is an exciting and eye-opening experience. As coders, we rarely if ever get a say in how our tools work. Languages like Python, Ruby, C/C++ and even Rust have been around for a while and are used by millions. Therefore, adding a feature we want or removing an annoyance is often a multi-year process that goes nowhere.</p>
+        
+    </div>
+</a>
+
+
+        <span class="header__right">
+            
+        </span>
+    </span>
+</header>
+
+
+            <div class="content">
+                
+  <main class="post">
+
+    <div class="post-info">
+      <p>
+        
+        
+
+        
+      </p>
+    </div>
+
+    <article>
+      <div class="post-info">
+        <p>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-calendar">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          
+            2024-08-01 10:33
+          
+
+           
+            
+          
+        </p>
+      </div>
+      <h1 class="post-title">
+        <a href="http://localhost:1313/posts/language-interpreter-from-scratch-part-1/">Language interpreter from scratch in Rust: Part 1 of many</a>
+      </h1>
+
+      
+
+      
+
+      
+
+      <div class="post-content">
+        <p>Creating your own programming language is an exciting and eye-opening experience. As coders, we rarely if ever get a say in how our tools work. Languages like Python, Ruby, C/C++ and even Rust have been around for a while and are used by millions. Therefore, adding a feature we want or removing an annoyance is often a multi-year process that goes nowhere.</p>
 <p>Designing your own language however, gives you the freedom to do whatever you want. As you dive deeper into the implementation of your interpreter, you will get to make decisions that impact the users of your language, possibly for decades to come. If nothing else, you will build empathy with other compiler authors and become a more enlightened engineer.</p>
 <p>This post is the first in a series that will guide you through designing your own programming language, and an interpreter program that will parse and execute your language.</p>
 <h2 id="quick-introduction">Quick introduction</h2>
@@ -776,32 +898,68 @@ and String(&#34;hello world&#34;) not supported
 <h2 id="acknowledgments">Acknowledgments</h2>
 <p>I learned how to do this over the last couple of weeks from other great tutorials. One of my favorites is <a href="https://norasandler.com/2017/11/29/Write-a-Compiler.html">Writing a C Compiler</a> by Nora Sandler.</p>
 <p>My motivation for writing this was to document my learning journey into writing an HTML template engine for a Rust web framework I am building. My hope is that others will find this useful. Feedback and corrections always welcome, please feel free to reach out at <a href="mailto:hi@levthe.dev">hi@levthe.dev</a>.</p>
-]]></content>
-        </item>
+
+      </div>
+    </article>
+
+    
+
+    <div class="post-info">
+      
+      
+
+      <p>
         
-        <item>
-            <title>My first post</title>
-            <link>http://localhost:1313/posts/my-first-post/</link>
-            <pubDate>Wed, 03 Jul 2024 13:33:45 -0400</pubDate>
+        
+      </p>
+    </div>
+
+    
+    <div class="pagination">
+        
+
+        <div class="pagination__buttons">
             
-            <guid>http://localhost:1313/posts/my-first-post/</guid>
-            <description>Well, this is awkward, I have never written a personal blog before. I guess hi, thanks for making it over here, and nice to meet you.
-I am an software engineer, I live in San Francisco and I have an adorable 5 month old puppy I take care of full time. I also have a day job, which often stretches into the evening hours.
-You read this far, so here is a picture of her passed out in front of my house:</description>
-            <content type="html"><![CDATA[<p>Well, this is awkward, I have never written a personal blog before. I guess hi, thanks for making it over here, and nice to meet you.</p>
-<p>I am an software engineer, I live in San Francisco and I have an adorable 5 month old puppy I take care of full time. I also have a day job, which often stretches into the evening hours.</p>
-<p>You read this far, so here is a picture of her passed out in front of my house:</p>
-<p><img src="puppy-sleeping.jpeg" alt="puppy"></p>
-<p>She was too tired to make it up 35 steps, so I let her take a quick nap.</p>
-<p>Things I might write about in the future:</p>
-<ul>
-<li>My dog</li>
-<li>My job</li>
-<li>Random engineering projects</li>
-</ul>
-<p>Cheers.</p>
-]]></content>
-        </item>
+
+            
+            <span class="button next">
+                <a href="http://localhost:1313/posts/my-first-post/">
+                    <span class="button__text">My first post</span>
+                    <span class="button__icon">→</span>
+                </a>
+            </span>
+            
+        </div>
+    </div>
+
+
+    
+
+    
+
+    
+
+  </main>
+
+            </div>
+
+            
+                <footer class="footer">
+    
+    
+</footer>
+
+            
+        </div>
+
         
-    </channel>
-</rss>
+
+
+
+<script type="text/javascript" src="/bundle.min.e89fda0f29b95d33f6f4224dd9e5cf69d84aff3818be2b0d73e731689cc374261b016d17d46f8381962fb4a1577ba3017b1f23509d894f6e66431f988c00889e.js" integrity="sha512-6J/aDym5XTP29CJN2eXPadhK/zgYvisNc&#43;cxaJzDdCYbAW0X1G&#43;DgZYvtKFXe6MBex8jUJ2JT25mQx&#43;YjACIng=="></script>
+
+
+
+
+    </body>
+</html>

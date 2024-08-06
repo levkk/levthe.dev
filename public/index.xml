@@ -10,9 +10,9 @@
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Language interpreter from scratch in Rust: Part 1 of many</title>
-      <link>http://localhost:1313/posts/yet-another-language-tutorial/</link>
+      <link>http://localhost:1313/posts/language-interpreter-from-scratch-part-1/</link>
       <pubDate>Thu, 01 Aug 2024 13:33:45 -0400</pubDate>
-      <guid>http://localhost:1313/posts/yet-another-language-tutorial/</guid>
+      <guid>http://localhost:1313/posts/language-interpreter-from-scratch-part-1/</guid>
       <description>Creating your own programming language is an exciting and eye-opening experience. As coders, we rarely if ever get a say in how our tools work. Languages like Python, Ruby, C/C++ and even Rust have been around for a while and are used by millions. Therefore, adding a feature we want or removing an annoyance is often a multi-year process that goes nowhere.&#xA;Designing your own language however, gives you the freedom to do whatever you want.</description>
     </item>
     <item>
