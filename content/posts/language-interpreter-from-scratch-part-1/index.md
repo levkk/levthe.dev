@@ -647,7 +647,7 @@ impl<'a> Lexer {
 }
 ```
 
-Looks good enough for now. Parsing strings can get more interesting, if you want to support escaping special characters (e.g. `\n`, the new line character) but for now, let's just test what we have. I'm temporarily removing code that parses and evaluates this expression, since we haven't added support for strings into the parser yet:
+Looks good enough for now. Parsing strings can get more interesting, if you want to support escaping special characters (e.g. `\n`, the new line character) but for now, let's just test what we have. I am temporarily removing code that parses and evaluates this expression, since we have not added support for strings into the parser yet:
 
 ```rust
 fn main () {
@@ -667,7 +667,7 @@ which produces:
 [Number(21), Plus, String("hello world"), Plus, Number(2)]
 ```
 
-While this may not make much sense yet in the context of our language, the lexer does not care and produces a valid list of tokens. Things are good, let's add string support into our Abstract Syntax Tree.
+While this may not make much sense yet in the context of our language, the lexer does not care and produces a valid list of tokens. Things are good, let's add strings into our Abstract Syntax Tree.
 
 ### Parser
 
