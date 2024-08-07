@@ -1008,6 +1008,6 @@ This is only the first part of many tutorials. Next ones will cover:
 
 ## Acknowledgments
 
-I learned how to do this over the last couple of weeks from other great tutorials. One of my favorites is [Writing a C Compiler](https://norasandler.com/2017/11/29/Write-a-Compiler.html) by Nora Sandler.
+I learned how to do this over the last couple of weeks from other great tutorials. One of my favorites is [Writing a C Compiler](https://norasandler.com/2017/11/29/Write-a-Compiler.html) by Nora Sandler. Another one I can't find anymore; it was about writing a transpiler into C, written in Python. It was on the front page of HN a while back. If anyone knows which one it is, please let me know.
 
 My motivation for writing this was to document my learning journey into writing an HTML template engine for a Rust web framework I am building. My hope is that others will find this useful. Feedback and corrections always welcome, please feel free to reach out at hi@levthe.dev.
