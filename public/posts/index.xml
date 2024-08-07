@@ -9,7 +9,7 @@
         <atom:link href="https://levthe.dev/posts/index.xml" rel="self" type="application/rss+xml" />
         
         <item>
-            <title>Programming language interpreter from scratch in Rust: Part 1 of many</title>
+            <title>Programming language interpreter from scratch in Rust: Part 1</title>
             <link>https://levthe.dev/posts/programming-language-interpreter-from-scratch-part-1/</link>
             <pubDate>Tue, 06 Aug 2024 13:33:45 -0400</pubDate>
             

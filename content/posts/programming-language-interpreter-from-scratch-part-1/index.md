@@ -1,5 +1,5 @@
 +++
-title = 'Programming language interpreter from scratch in Rust: Part 1 of many'
+title = 'Programming language interpreter from scratch in Rust: Part 1'
 date = 2024-08-06T13:33:45-04:00
 +++
 
