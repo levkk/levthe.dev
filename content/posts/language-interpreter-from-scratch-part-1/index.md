@@ -991,7 +991,7 @@ Full code is available [here](https://play.rust-lang.org/?version=stable&mode=de
 
 In this post, we learned quite a few things. I would love to keep going, but almost 5,000 words is a good place to take a breather, so let's do a quick recap.
 
-Programming languages are arbitrary, and you can design your own in about an hour. Writing the foundation for your interpreter requires less than 200 lines of code (most of which are comments).
+Programming languages are arbitrary, and you can design your own in about an hour. Writing the foundation for your interpreter requires less than 200 lines of code (many of which are comments).
 
 The interpreter is split into three distinct parts, lexer, parser, and executor, working independently and together to run your code on many different systems. Separating concerns into their own abstractions seemed excessive at first, but as the language evolved, adding features was easy, and our interpreter was able to grow with the language.
 
