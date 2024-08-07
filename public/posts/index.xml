@@ -5,28 +5,27 @@
         <description>Recent content in Posts on Lev&#39;s blog</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>en-us</language>
-        <lastBuildDate>Thu, 01 Aug 2024 13:33:45 -0400</lastBuildDate>
+        <lastBuildDate>Tue, 06 Aug 2024 13:33:45 -0400</lastBuildDate>
         <atom:link href="http://localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
         
         <item>
-            <title>Language interpreter from scratch in Rust: Part 1 of many</title>
-            <link>http://localhost:1313/posts/language-interpreter-from-scratch-part-1/</link>
-            <pubDate>Thu, 01 Aug 2024 13:33:45 -0400</pubDate>
+            <title>Programming language interpreter from scratch in Rust: Part 1 of many</title>
+            <link>http://localhost:1313/posts/programming-language-interpreter-from-scratch-part-1/</link>
+            <pubDate>Tue, 06 Aug 2024 13:33:45 -0400</pubDate>
             
-            <guid>http://localhost:1313/posts/language-interpreter-from-scratch-part-1/</guid>
-            <description>Creating your own programming language is an exciting and eye-opening experience. As coders, we rarely if ever get a say in how our tools work. Languages like Python, Ruby, C/C++ and even Rust have been around for a while and are used by millions. Therefore, adding a feature we want or removing an annoyance is often a multi-year process that goes nowhere.
-Designing your own language however, gives you the freedom to do whatever you want.</description>
-            <content type="html"><![CDATA[<p>Creating your own programming language is an exciting and eye-opening experience. As coders, we rarely if ever get a say in how our tools work. Languages like Python, Ruby, C/C++ and even Rust have been around for a while and are used by millions. Therefore, adding a feature we want or removing an annoyance is often a multi-year process that goes nowhere.</p>
-<p>Designing your own language however, gives you the freedom to do whatever you want. As you dive deeper into the implementation of your interpreter, you will get to make decisions that impact the users of your language, possibly for decades to come. If nothing else, you will build empathy with other compiler authors and become a more enlightened engineer.</p>
-<p>This post is the first in a series that will guide you through designing your own programming language, and an interpreter program that will parse and execute your language.</p>
+            <guid>http://localhost:1313/posts/programming-language-interpreter-from-scratch-part-1/</guid>
+            <description>Creating your own programming language is a fun experience. As coders, we often take compilers for magical tools that just work. Underneath, they are regular software, and with a couple hundred lines of code we can write our own, from scratch.
+This post is the first in a series that will guide you through designing your own programming language, and an interpreter program that will read and execute code written in that language.</description>
+            <content type="html"><![CDATA[<p>Creating your own programming language is a fun experience. As coders, we often take compilers for magical tools that just work. Underneath, they are regular software, and with a couple hundred lines of code we can write our own, from scratch.</p>
+<p>This post is the first in a series that will guide you through designing your own programming language, and an interpreter program that will read and execute code written in that language.</p>
 <h2 id="quick-introduction">Quick introduction</h2>
-<p>All programming languages, from the friendliest ones like Python, to the incomprehensible ones like C++, are built using two independent components: a lexer and a parser. This design pattern has existed for as long as I have been studying computing, so I will take it for granted and use it in this guide.</p>
-<p>Where our interpreter will diverge is, instead of compiling our language to assembly, like the C++ compiler would do, or to some custom intermediate &ldquo;bytecode&rdquo; like the Python interpreter does, we will execute code directly.</p>
-<p>Our interpreter will be written in Rust, so we won&rsquo;t have to worry about memory management or performance (for now), and end up with something that is not just a toy example.</p>
-<p>All code examples will also have a Rust Playground link, so you can run and edit them as you follow along.</p>
+<p>All programming languages, from the beginner-friendly ones like Python, to the complicated ones like C++, are built using two independent components: a lexer and a parser. This design pattern separates concerns into two distinct parts, leading to a legible and optimal implementation.</p>
+<p>Where our implementation will diverge is, instead of compiling our language to assembly, like the C++ compiler would do for example, or to some custom intermediate &ldquo;bytecode&rdquo; like the Python interpreter, we will execute code directly.</p>
+<p>Our interpreter will be written in Rust, so we will not have to worry about memory management or performance (for now), and will end up with something that actually works.</p>
+<p>All code examples will have a Rust Playground reference, so you can run and edit them as you follow along.</p>
 <p>Without further ado, let&rsquo;s get started.</p>
 <h2 id="lexer">Lexer</h2>
-<p>The lexer takes text and converts it to a list of tokens. A token could be a letter, a word, a number, or a punctuation mark. Tokens have meaning depending on their position in the code, but the lexer won&rsquo;t concern itself with syntax: it&rsquo;s only job is to transform text into an allowed list of symbols.</p>
+<p>The lexer takes text and converts it to a list of tokens. A token could be a letter, a word, a number, or a punctuation mark. Tokens have meaning depending on their position in the code, but the lexer will not concern itself with syntax: its only job is to transform text into an allowed list of symbols.</p>
 <h3 id="example">Example</h3>
 <p>Most programming languages allow its users to do math. Let&rsquo;s start building our interpreter with a simple arithmetic example, and write a lexer that can handle it.</p>
 <p><em>The code</em></p>
@@ -34,7 +33,7 @@ Designing your own language however, gives you the freedom to do whatever you wa
 </code></pre><p>The job of the lexer is to transform this code into the following tokens:</p>
 <pre tabindex="0"><code>Number(1), Plus, Number(2)
 </code></pre><p>While you probably think that this program will add one and two together and produce <code>3</code>, the lexer is not allowed to make assumptions about syntax or what the code will do.</p>
-<p>Since we&rsquo;re writing our lexer in Rust, an enum that will represent all allowed tokens in our simple language seems like a good representation:</p>
+<p>Since we are writing our lexer in Rust, an enum that will represent all allowed tokens in our simple language seems like a good abstraction:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#e6db74">/// List of all available tokens in our language.
 </span></span></span><span style="display:flex;"><span><span style="color:#e6db74"></span><span style="color:#75715e">#[derive(Debug)]</span>
 </span></span><span style="display:flex;"><span><span style="color:#66d9ef">pub</span> <span style="color:#66d9ef">enum</span> <span style="color:#a6e22e">Token</span> {
@@ -164,7 +163,7 @@ not yet implemented: lexer error, unsupported character: &#39; &#39;
 <p>The parser takes a list (sometimes called a stream) of tokens and produces an Abstract Syntax Tree. The AST, for short, is a structural representation of the code: it organizes tokens in such a way that makes sense in the context of the language rules. Constructing the AST consequently validates that the code is syntactically correct. When writing code in languages like Rust or Python, syntax errors which we are all too familiar with, are typically thrown by the parser.</p>
 <p>Before we can build our parser, we need to get a bit more involved in our language design. By understanding a bit of theory, we can build the right abstractions early on, and make our job easier later.</p>
 <h3 id="formal-definition">Formal definition</h3>
-<p>A formal definition is a blueprint of valid language syntax. It&rsquo;s only job is to ensure that tokens are presented in the correct order. It does not explain what those tokens mean or do; while the reader could infer that an <code>if</code> statement controls which part of the code is executed, the language designer could make that statement exit the program instead. Of course, that would be somewhat cruel, but the formal definition we are about to write really does not concern itself with how the interpreter chooses to execute the code.</p>
+<p>A formal definition is a blueprint of valid language syntax. Its only job is to ensure that tokens are presented in the correct order. It does not explain what those tokens mean or do; while the reader could infer that an <code>if</code> statement controls which part of the code is executed, the language designer could make that statement exit the program instead. Of course, that would be somewhat cruel, but the formal definition we are about to write really does not concern itself with how the interpreter chooses to execute the code.</p>
 <p>With that somewhat disturbing knowledge hammered into our minds, let&rsquo;s write something:</p>
 <pre tabindex="0"><code>language = expression
 expression = term operation term | term
@@ -219,7 +218,7 @@ operation = &#39;+&#39;
 <p>Moving down to the next line, the <code>value</code> is expanded to a number:</p>
 <pre tabindex="0"><code>value = number
 </code></pre><p>Our simple language only allows numbers, but soon enough we will add strings, lists and hashes. We will be able to define operations between values of different types, e.g. addition between a list and a string, and our language will really take form.</p>
-<p>Finally, our only allowed operation in, addition, is specified on the last line:</p>
+<p>Finally, our only operation, addition, is specified on the last line:</p>
 <pre tabindex="0"><code>operation = &#39;+&#39;
 </code></pre><h4 id="parsing-our-example">Parsing our example</h4>
 <p>Now that we have formal definitions, let&rsquo;s parse our example manually. Our code,</p>
@@ -421,7 +420,7 @@ note: an implementation of `Add` might be missing for `Value`
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>Running our interpreter, we finally get:</p>
 <pre tabindex="0"><code>Number(23)
-</code></pre><p>That was quite a journey, but we are finally here. With only 175 lines of code, we managed to read text and add two numbers together. Talk about doing things the hard way, but it is definitely more fun and informative than just typing them into a Google search field.</p>
+</code></pre><p>That was quite a journey, but we are finally here. With only 175 lines of code, we managed to read text and add two numbers together. Talk about doing things the hard way, but it is definitely more fun and informative than just typing it into a Google.</p>
 <p>Source code is available <a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2021&amp;gist=8c50fd21a8b49b92005addc503bf22e6">here</a>.</p>
 <h2 id="quick-recap">Quick recap</h2>
 <p>Before going further, let&rsquo;s do a quick recap.</p>
@@ -489,7 +488,7 @@ note: an implementation of `Add` might be missing for `Value`
 </span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>        std::mem::take(<span style="color:#f92672">&amp;</span><span style="color:#66d9ef">mut</span> self.tokens)
 </span></span><span style="display:flex;"><span>    }
 </span></span><span style="display:flex;"><span>}
-</span></span></code></pre></div><p>Looks good enough for now. Parsing strings can get more interesting, if you want to support escaping special characters (e.g. <code>\n</code>, the new line character) but for now, let&rsquo;s just test what we have. I&rsquo;m temporarily removing code that parses and evaluates this expression, since we haven&rsquo;t added support for strings into the parser yet:</p>
+</span></span></code></pre></div><p>Looks good enough for now. Parsing strings can get more interesting, if you want to support escaping special characters (e.g. <code>\n</code>, the new line character) but for now, let&rsquo;s just test what we have. I am temporarily removing code that parses and evaluates this expression, since we have not added support for strings into the parser yet:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#66d9ef">fn</span> <span style="color:#a6e22e">main</span> () {
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">let</span> source <span style="color:#f92672">=</span> <span style="color:#e6db74">r</span><span style="color:#e6db74">#&#34;21 + &#34;hello world&#34; + 2&#34;#</span>;
 </span></span><span style="display:flex;"><span>
@@ -501,7 +500,7 @@ note: an implementation of `Add` might be missing for `Value`
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>which produces:</p>
 <pre tabindex="0"><code>[Number(21), Plus, String(&#34;hello world&#34;), Plus, Number(2)]
-</code></pre><p>While this may not make much sense yet in the context of our language, the lexer does not care and produces a valid list of tokens. Things are good, let&rsquo;s add string support into our Abstract Syntax Tree.</p>
+</code></pre><p>While this may not make much sense yet in the context of our language, the lexer does not care and produces a valid list of tokens. Things are good, let&rsquo;s add strings into our Abstract Syntax Tree.</p>
 <h3 id="parser-1">Parser</h3>
 <p>The parser operates with values, so we need to add a string value to our <code>Value</code> enum first:</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-rust" data-lang="rust"><span style="display:flex;"><span><span style="color:#75715e">#[derive(Debug, Clone)]</span>
@@ -762,7 +761,7 @@ and String(&#34;hello world&#34;) not supported
 </code></pre><p>Full code is available <a href="https://play.rust-lang.org/?version=stable&amp;mode=debug&amp;edition=2021&amp;gist=383394227bd99876688d7956f669829e">here</a>.</p>
 <h2 id="summary">Summary</h2>
 <p>In this post, we learned quite a few things. I would love to keep going, but almost 5,000 words is a good place to take a breather, so let&rsquo;s do a quick recap.</p>
-<p>Programming languages are arbitrary, and you can design your own in about an hour. Writing the foundation for your interpreter requires less than 200 lines of code (most of which are comments).</p>
+<p>Programming languages are arbitrary, and you can design your own in about an hour. Writing the foundation for your interpreter requires less than 200 lines of code (many of which are comments).</p>
 <p>The interpreter is split into three distinct parts, lexer, parser, and executor, working independently and together to run your code on many different systems. Separating concerns into their own abstractions seemed excessive at first, but as the language evolved, adding features was easy, and our interpreter was able to grow with the language.</p>
 <p>We were able to build features into our language that another language chose not to support, making our language unique and useful for our purpose.</p>
 <h2 id="next-steps">Next steps</h2>
@@ -774,7 +773,7 @@ and String(&#34;hello world&#34;) not supported
 <li>More syntactic sugar to make your language unique and useful</li>
 </ul>
 <h2 id="acknowledgments">Acknowledgments</h2>
-<p>I learned how to do this over the last couple of weeks from other great tutorials. One of my favorites is <a href="https://norasandler.com/2017/11/29/Write-a-Compiler.html">Writing a C Compiler</a> by Nora Sandler.</p>
+<p>I learned how to do this over the last couple of weeks from other great tutorials. One of my favorites is <a href="https://norasandler.com/2017/11/29/Write-a-Compiler.html">Writing a C Compiler</a> by Nora Sandler. Another one I can&rsquo;t find anymore; it was about writing a transpiler into C, written in Python. It was on the front page of HN a while back. If anyone knows which one it is, please let me know.</p>
 <p>My motivation for writing this was to document my learning journey into writing an HTML template engine for a Rust web framework I am building. My hope is that others will find this useful. Feedback and corrections always welcome, please feel free to reach out at <a href="mailto:hi@levthe.dev">hi@levthe.dev</a>.</p>
 ]]></content>
         </item>
