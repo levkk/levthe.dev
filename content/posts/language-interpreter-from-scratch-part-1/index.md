@@ -559,7 +559,7 @@ Running our interpreter, we finally get:
 Number(23)
 ```
 
-That was quite a journey, but we are finally here. With only 175 lines of code, we managed to read text and add two numbers together. Talk about doing things the hard way, but it is definitely more fun and informative than just typing them into a Google search field.
+That was quite a journey, but we are finally here. With only 175 lines of code, we managed to read text and add two numbers together. Talk about doing things the hard way, but it is definitely more fun and informative than just typing it into a Google.
 
 Source code is available [here](https://play.rust-lang.org/?version=stable&mode=debug&edition=2021&gist=8c50fd21a8b49b92005addc503bf22e6).
 
