@@ -3,21 +3,19 @@ title = 'Language interpreter from scratch in Rust: Part 1 of many'
 date = 2024-08-06T13:33:45-04:00
 +++
 
-Creating your own programming language is an exciting and eye-opening experience. As coders, we rarely if ever get a say in how our tools work. Languages like Python, Ruby, C/C++ and even Rust have been around for a while and are used by millions. Therefore, adding a feature we want or removing an annoyance is often a multi-year process that goes nowhere.
+Creating your own programming language is a fun experience. As coders, we often take compilers for magical tools that just work. Underneath, they are just regular software, and with just a few hundred lines of code we can write our own, from scratch.
 
-Designing your own language however, gives you the freedom to do whatever you want. As you dive deeper into the implementation of your interpreter, you will get to make decisions that impact the users of your language, possibly for decades to come. If nothing else, you will build empathy with other compiler authors and become a more enlightened engineer.
-
-This post is the first in a series that will guide you through designing your own programming language, and an interpreter program that will parse and execute your language.
+This post is the first in a series that will guide you through designing your own programming language, and an interpreter program that will read and execute code written in that language.
 
 ## Quick introduction
 
-All programming languages, from the friendliest ones like Python, to the incomprehensible ones like C++, are built using two independent components: a lexer and a parser. This design pattern has existed for as long as I have been studying computing, so I will take it for granted and use it in this guide.
+All programming languages, from the beginner-friendly ones like Python, to the complicated ones like C++, are built using two independent components: a lexer and a parser. This design pattern separates concerns into two distinct parts, leading to a legible and optimal implementation.
 
-Where our interpreter will diverge is, instead of compiling our language to assembly, like the C++ compiler would do, or to some custom intermediate "bytecode" like the Python interpreter does, we will execute code directly.
+Where our implementation will diverge is, instead of compiling our language to assembly, like the C++ compiler would do for example, or to some custom intermediate "bytecode" like the Python interpreter, we will execute code directly.
 
-Our interpreter will be written in Rust, so we will not have to worry about memory management or performance (for now), and end up with something that is not just a toy example.
+Our interpreter will be written in Rust, so we will not have to worry about memory management or performance (for now), and will end up with something that actually works.
 
-All code examples will also have a Rust Playground link, so you can run and edit them as you follow along.
+All code examples will have a Rust Playground reference, so you can run and edit them as you follow along.
 
 Without further ado, let's get started.
 

@@ -6,8 +6,8 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="author" content="">
-<meta name="description" content="Creating your own programming language is an exciting and eye-opening experience. As coders, we rarely if ever get a say in how our tools work. Languages like Python, Ruby, C/C&#43;&#43; and even Rust have been around for a while and are used by millions. Therefore, adding a feature we want or removing an annoyance is often a multi-year process that goes nowhere.
-Designing your own language however, gives you the freedom to do whatever you want." />
+<meta name="description" content="Creating your own programming language is a fun experience. As coders, we often take compilers for magical tools that just work. Underneath, they are just regular software, and with just a few hundred lines of code we can write our own, from scratch.
+This post is the first in a series that will guide you through designing your own programming language, and an interpreter program that will read and execute code written in that language." />
 <meta name="keywords" content="" />
 <meta name="robots" content="noodp" />
 <meta name="theme-color" content="" />
@@ -39,16 +39,16 @@ Designing your own language however, gives you the freedom to do whatever you wa
 
 
   <meta itemprop="name" content="Language interpreter from scratch in Rust: Part 1 of many">
-  <meta itemprop="description" content="Creating your own programming language is an exciting and eye-opening experience. As coders, we rarely if ever get a say in how our tools work. Languages like Python, Ruby, C/C&#43;&#43; and even Rust have been around for a while and are used by millions. Therefore, adding a feature we want or removing an annoyance is often a multi-year process that goes nowhere.
-Designing your own language however, gives you the freedom to do whatever you want.">
+  <meta itemprop="description" content="Creating your own programming language is a fun experience. As coders, we often take compilers for magical tools that just work. Underneath, they are just regular software, and with just a few hundred lines of code we can write our own, from scratch.
+This post is the first in a series that will guide you through designing your own programming language, and an interpreter program that will read and execute code written in that language.">
   <meta itemprop="datePublished" content="2024-08-06T13:33:45-04:00">
   <meta itemprop="dateModified" content="2024-08-06T13:33:45-04:00">
-  <meta itemprop="wordCount" content="5397">
+  <meta itemprop="wordCount" content="5308">
 
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="Language interpreter from scratch in Rust: Part 1 of many">
-  <meta name="twitter:description" content="Creating your own programming language is an exciting and eye-opening experience. As coders, we rarely if ever get a say in how our tools work. Languages like Python, Ruby, C/C&#43;&#43; and even Rust have been around for a while and are used by millions. Therefore, adding a feature we want or removing an annoyance is often a multi-year process that goes nowhere.
-Designing your own language however, gives you the freedom to do whatever you want.">
+  <meta name="twitter:description" content="Creating your own programming language is a fun experience. As coders, we often take compilers for magical tools that just work. Underneath, they are just regular software, and with just a few hundred lines of code we can write our own, from scratch.
+This post is the first in a series that will guide you through designing your own programming language, and an interpreter program that will read and execute code written in that language.">
 
 
 
@@ -138,14 +138,13 @@ Designing your own language however, gives you the freedom to do whatever you wa
       
 
       <div class="post-content">
-        <p>Creating your own programming language is an exciting and eye-opening experience. As coders, we rarely if ever get a say in how our tools work. Languages like Python, Ruby, C/C++ and even Rust have been around for a while and are used by millions. Therefore, adding a feature we want or removing an annoyance is often a multi-year process that goes nowhere.</p>
-<p>Designing your own language however, gives you the freedom to do whatever you want. As you dive deeper into the implementation of your interpreter, you will get to make decisions that impact the users of your language, possibly for decades to come. If nothing else, you will build empathy with other compiler authors and become a more enlightened engineer.</p>
-<p>This post is the first in a series that will guide you through designing your own programming language, and an interpreter program that will parse and execute your language.</p>
+        <p>Creating your own programming language is a fun experience. As coders, we often take compilers for magical tools that just work. Underneath, they are just regular software, and with just a few hundred lines of code we can write our own, from scratch.</p>
+<p>This post is the first in a series that will guide you through designing your own programming language, and an interpreter program that will read and execute code written in that language.</p>
 <h2 id="quick-introduction">Quick introduction</h2>
-<p>All programming languages, from the friendliest ones like Python, to the incomprehensible ones like C++, are built using two independent components: a lexer and a parser. This design pattern has existed for as long as I have been studying computing, so I will take it for granted and use it in this guide.</p>
-<p>Where our interpreter will diverge is, instead of compiling our language to assembly, like the C++ compiler would do, or to some custom intermediate &ldquo;bytecode&rdquo; like the Python interpreter does, we will execute code directly.</p>
-<p>Our interpreter will be written in Rust, so we will not have to worry about memory management or performance (for now), and end up with something that is not just a toy example.</p>
-<p>All code examples will also have a Rust Playground link, so you can run and edit them as you follow along.</p>
+<p>All programming languages, from the beginner-friendly ones like Python, to the complicated ones like C++, are built using two independent components: a lexer and a parser. This design pattern separates concerns into two distinct parts, leading to a legible and optimal implementation.</p>
+<p>Where our implementation will diverge is, instead of compiling our language to assembly, like the C++ compiler would do for example, or to some custom intermediate &ldquo;bytecode&rdquo; like the Python interpreter, we will execute code directly.</p>
+<p>Our interpreter will be written in Rust, so we will not have to worry about memory management or performance (for now), and will end up with something that actually works.</p>
+<p>All code examples will have a Rust Playground reference, so you can run and edit them as you follow along.</p>
 <p>Without further ado, let&rsquo;s get started.</p>
 <h2 id="lexer">Lexer</h2>
 <p>The lexer takes text and converts it to a list of tokens. A token could be a letter, a word, a number, or a punctuation mark. Tokens have meaning depending on their position in the code, but the lexer will not concern itself with syntax: its only job is to transform text into an allowed list of symbols.</p>
