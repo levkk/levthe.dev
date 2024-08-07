@@ -3,7 +3,7 @@ title = 'Language interpreter from scratch in Rust: Part 1 of many'
 date = 2024-08-06T13:33:45-04:00
 +++
 
-Creating your own programming language is a fun experience. As coders, we often take compilers for magical tools that just work. Underneath, they are just regular software, and with just a few hundred lines of code we can write our own, from scratch.
+Creating your own programming language is a fun experience. As coders, we often take compilers for magical tools that just work. Underneath, they are regular software, and with a couple hundred lines of code we can write our own, from scratch.
 
 This post is the first in a series that will guide you through designing your own programming language, and an interpreter program that will read and execute code written in that language.
 
