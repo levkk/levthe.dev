@@ -1,6 +1,6 @@
 +++
 title = 'My first post'
-date = 2024-07-03T13:33:45-04:00
+date = 2024-07-03T13:00:00-07:00
 +++
 
 Well, this is awkward, I have never written a personal blog before. I guess hi, thanks for making it over here, and nice to meet you.

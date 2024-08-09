@@ -1,6 +1,6 @@
 +++
 title = 'Programming language interpreter from scratch in Rust: Part 1'
-date = 2024-08-06T13:33:45-04:00
+date = 2024-08-06T14:00:00-07:00
 +++
 
 Creating your own programming language is a fun experience. As coders, we often take compilers for magical tools that just work. Underneath, they are regular software, and with a couple hundred lines of code we can write our own, from scratch.
