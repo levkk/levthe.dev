@@ -87,10 +87,12 @@ Running our example, we now get:
 [Number(21), Plus, Identifier("x")]
 ```
 
-Everything looks good. Naming things is hard, and some languages do not make it easier. For examples, in C/C++, variables cannot start with a number, e.g. variable named `123x` would throw a syntax error. The reasons for this are not entirely clear ([1]), but if we had to take a guess, it is because parsing every identifier to figure out if it is a number or not is inefficient and slows down compilation. We will not concern ourselves with that for now and allow our language users to name their variables almost whatever they want.
+Everything looks good. Naming things is hard, and some languages do not make it easier. For examples, in C/C++, variables cannot start with a number, e.g. variable named `123x` would throw a syntax error. The reasons for this are not entirely clear ([1]), but if we had to take a guess, parsing every identifier is inefficient and slows down compilation. We will not concern ourselves with that for now and allow our language users to name their variables almost whatever they want.
 
 
 ### Parser
+
+sdfs
 
 
 [1]: https://stackoverflow.com/questions/342152/why-cant-variable-names-start-with-numbers
