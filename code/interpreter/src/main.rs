@@ -1,6 +1,7 @@
 #![allow(unused_mut, dead_code, unused_variables)]
 use std::iter::Iterator;
 use std::ops::{Add, Mul};
+use std::collections::HashMap;
 
 /// List of all available tokens in our language.
 #[derive(Debug)]
@@ -9,6 +10,7 @@ pub enum Token {
     Plus,
     String(String),
     Star,
+    Identifier(String),
 }
 
 pub struct Lexer<'a> {
@@ -53,9 +55,12 @@ impl<'a> Lexer<'a> {
     
                     self.tokens.push(Token::String(string));
                 },
+
                 '*' => self.tokens.push(Token::Star),
     
-                c => todo!("lexer error, unsupported character: '{}'", c),
+                // All unknown characters are buffered
+                // until a known token is seen.
+                c => self.buffer.push(c),
             }
         }
     
@@ -69,13 +74,16 @@ impl<'a> Lexer<'a> {
         if self.buffer.is_empty() {
             return;
         }
-
-        // Use the standard library's [`str::parse`]
-        // to convert text to an integer.
-        self.tokens
-            .push(Token::Number(self.buffer.as_str().parse().unwrap()));
-
-        // Clear the buffer for the next token.
+        
+        // If the token is numeric, parse it as a number.
+        if let Ok(number) = self.buffer.as_str().parse() {
+            self.tokens.push(Token::Number(number));
+        } else {
+            // Otherwise, the token is some sort of word,
+            // which makes it an identifier.
+            self.tokens.push(Token::Identifier(self.buffer.clone()));
+        }
+        
         self.buffer.clear();
     }
 }
@@ -149,10 +157,32 @@ impl Mul for Value {
     }
 }
 
-/// Expression term. Currently, only values are supported.
+/// Expression term.
 #[derive(Debug)]
 enum Term {
+    /// Constant value.
     Value(Value),
+
+    /// Variable value.
+    Variable {
+        /// Name of the variable.
+        name: String,
+    }
+}
+
+impl Term {
+    /// Evaluate the term given the scope.
+    pub fn evaluate(&self, scope: &Scope) -> Value {
+        match self {
+            Term::Value(value) => value.clone(),
+            Term::Variable { name } => {
+                match scope.get(name) {
+                    Some(value) => value,
+                    None => panic!("runtime error: variable '{}' not found", name),
+                }
+            }
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -198,25 +228,35 @@ impl Expression {
         match token {
             Token::Number(n) => Term::Value(Value::Number(n)),
             Token::String(s) => Term::Value(Value::String(s)),
+            Token::Identifier(name) => Term::Variable { name },
             _ => panic!("syntax error, expected term, got: {:?}", token),
         }
     }
     
-    pub fn evaluate(&self) -> Value {
+    pub fn evaluate(&self, scope: &Scope) -> Value {
         match self {
-            Expression::Term(Term::Value(value)) => value.clone(),
+            // Evaluate a single term.
+            Expression::Term(term) => term.evaluate(&scope),
+
+            // Evaluate a binary term.
             Expression::Binary {
-                left: Term::Value(left),
+                left,
                 op,
-                right: Term::Value(right)
+                right,
             } => {
+                // Evaluate the term on the left.
+                let left = left.evaluate(scope);
+
+                // Evaluate the term on the right.
+                let right = right.evaluate(scope);
+
                 match op {
                     Operation::Addition => {
-                        left.clone() + right.clone()
+                        left + right
                     }
                     
                     Operation::Multiplication => {
-                        left.clone() * right.clone()
+                        left * right
                     }
                 }
             },
@@ -224,12 +264,37 @@ impl Expression {
     }
 }
 
+#[derive(Debug)]
+struct Scope {
+    variables: HashMap<String, Value>,
+}
+
+impl Scope {
+    /// Create empty scope.
+    pub fn new() -> Scope {
+        Scope {
+            variables: HashMap::new(),
+        }
+    }
+
+    /// Retrieve a variable's value from the scope.
+    pub fn get(&self, name: &str) -> Option<Value> {
+        self.variables.get(name).cloned()
+    }
+
+    /// Set a variable's value in the scope.
+    pub fn set(&mut self, name: impl ToString, value: Value) {
+        self.variables.insert(name.to_string(), value);
+    }
+}
+
 fn main () {
-    eval(r#""hello" * 3"#);
+    eval(r#"21 + x"#);
 }
 
 fn eval(source: &str) {
     // Parse the code into tokens.
+    let mut scope = Scope::new();
     let mut lexer = Lexer::new(source);
     let tokens = lexer.tokens();
 
@@ -238,8 +303,10 @@ fn eval(source: &str) {
 
     println!("{:#?}", expression);
 
+    scope.set("x", Value::Number(2));
+
     // Execute the AST producing a single value.
-    let result = expression.evaluate();
+    let result = expression.evaluate(&scope);
 
     println!("{:?}", result);
 }
