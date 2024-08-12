@@ -154,7 +154,7 @@ Variables Variables are placeholders for values. Most languages expect them to h
 </span></span><span style="display:flex;"><span>    Star,
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#75715e">// The new identifier token.
-</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    Identifer(String),
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>    Identifier(String),
 </span></span><span style="display:flex;"><span>}
 </span></span></code></pre></div><p>When parsing code, an identifier is a token which is not some other token previously defined. For example, when parsing <code>21 + 2</code>, all tokens are already spoken for (i.e. <code>Number, Plus, Number</code>, spaces are ignored) however, if the code is changed to <code>21 + x</code>, the <code>x</code> token is not part of our grammar, and  therefore it must be an identity.</p>
 <p>Implementing this in the parser requires a two small modifications. First, when parsing source code one at a time, instead of throwing an error when we encounter an unknown character, place it in the buffer:</p>
