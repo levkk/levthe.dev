@@ -331,4 +331,6 @@ scope.set("x", Value::Number(2));
 Number(23)
 ```
 
+Source code is available [here](https://play.rust-lang.org/?version=stable&mode=debug&edition=2021&gist=eb59b928b60437430de49a5b7b9c1c94).
+
 [1]: https://stackoverflow.com/questions/342152/why-cant-variable-names-start-with-numbers
