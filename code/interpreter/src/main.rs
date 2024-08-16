@@ -1,5 +1,5 @@
 #![allow(unused_mut, dead_code, unused_variables)]
-use std::iter::Iterator;
+use std::iter::{Iterator, Peekable};
 use std::ops::{Add, Mul};
 use std::collections::HashMap;
 
@@ -11,6 +11,8 @@ pub enum Token {
     String(String),
     Star,
     Identifier(String),
+    Let,
+    Equals,
 }
 
 pub struct Lexer<'a> {
@@ -57,6 +59,7 @@ impl<'a> Lexer<'a> {
                 },
 
                 '*' => self.tokens.push(Token::Star),
+                '=' => self.tokens.push(Token::Equals),
     
                 // All unknown characters are buffered
                 // until a known token is seen.
@@ -79,9 +82,12 @@ impl<'a> Lexer<'a> {
         if let Ok(number) = self.buffer.as_str().parse() {
             self.tokens.push(Token::Number(number));
         } else {
-            // Otherwise, the token is some sort of word,
-            // which makes it an identifier.
-            self.tokens.push(Token::Identifier(self.buffer.clone()));
+            match self.buffer.as_str() {
+                "let" => self.tokens.push(Token::Let),
+                // Otherwise, the token is some sort of word,
+                // which makes it an identifier.
+                _ => self.tokens.push(Token::Identifier(self.buffer.clone())),
+            }
         }
         
         self.buffer.clear();
@@ -288,25 +294,101 @@ impl Scope {
     }
 }
 
-fn main () {
-    eval(r#"21 + x"#);
+#[derive(Debug)]
+enum Statement {
+    Assignment {
+        name: String,
+        value: Expression,
+    },
+
+    Expression(Expression),
 }
 
-fn eval(source: &str) {
-    // Parse the code into tokens.
-    let mut scope = Scope::new();
-    let mut lexer = Lexer::new(source);
-    let tokens = lexer.tokens();
+impl Statement {
+    /// Parse a statement from a stream of tokens.
+    pub fn parse(stream: &mut Peekable<impl Iterator<Item = Token>>) -> Statement {
+        let token = stream.peek().expect("empty token stream");
 
-    // Parse the tokens into an AST.
-    let expression = Expression::parse(&mut tokens.into_iter());
+        match token {
+            Token::Let => Self::assignment(stream),
+            _ => Statement::Expression(Expression::parse(stream)),
+        }
+    }
 
-    println!("{:#?}", expression);
+    /// Evaluate the statement given the scope.
+    pub fn evaluate(&self, scope: &mut Scope) -> Option<Value> {
+        match self {
+            Statement::Assignment { name, value } => {
+                let value = value.evaluate(scope);
+                scope.set(name, value);
 
-    scope.set("x", Value::Number(2));
+                None
+            }
 
-    // Execute the AST producing a single value.
-    let result = expression.evaluate(&scope);
+            Statement::Expression(expression) => {
+                Some(expression.evaluate(scope))
+            }
+        }
+    }
+
+    /// Parse statement assignment.
+    fn assignment(stream: &mut impl Iterator<Item = Token>) -> Statement {
+        // Consume and discard the `let` token.
+        let _let = stream.next().unwrap();
+
+        // Get the variable name.
+        let name = match stream.next() {
+            None => panic!("syntax error, expected identifier"),
+            Some(Token::Identifier(name)) => name,
+            Some(token) => panic!(
+                "syntax error, expected identifier, got: {:?}",
+                token
+            ),
+        };
+
+        // Consume and discard the `=` token.
+        match stream.next() {
+            Some(Token::Equals) => (),
+            Some(token) => panic!(
+                "syntax error, expected '=', got: {:?}",
+                token
+            ),
+            None => panic!("syntax error, expected '='"),
+        };
+
+        let value = Expression::parse(stream);
+
+        Statement::Assignment { name, value }
+    }
+}
+
+fn main () {
+    let result = eval("
+        let x = 3 * 2
+        let y = x + 5
+        x + y
+    ");
 
     println!("{:?}", result);
+}
+
+fn eval(source: &str) -> Option<Value> {
+    let mut scope = Scope::new();
+    let mut value = None;
+
+    for line in source.lines() {
+        let line = line.trim(); // Remove extra spaces.
+
+        if line.is_empty() {
+            continue;
+        }
+
+        let mut lexer = Lexer::new(line);
+        let tokens = lexer.tokens();
+
+        let statement = Statement::parse(&mut tokens.into_iter().peekable());
+        value = statement.evaluate(&mut scope);
+    }
+
+    value
 }
