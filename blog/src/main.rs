@@ -21,7 +21,10 @@ struct NotFound;
 #[async_trait]
 impl Controller for NotFound {
     async fn handle(&self, _: &Request) -> Result<Response, Error> {
-        render!("templates/not_found.html", 404)
+        render!("templates/not_found.html",
+            "title" => "Page not found | Lev's blog",
+            404
+        )
     }
 }
 
