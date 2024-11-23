@@ -39,6 +39,6 @@ async fn main() -> Result<(), http::Error> {
         StaticFiles::serve("static")?,
         NotFound::default().wildcard("/"),
     ])
-    .launch("0.0.0.0:8000")
+    .launch("0.0.0.0:8001")
     .await
 }
