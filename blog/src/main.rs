@@ -15,6 +15,16 @@ impl Controller for Index {
     }
 }
 
+#[derive(Default)]
+struct NotFound;
+
+#[async_trait]
+impl Controller for NotFound {
+    async fn handle(&self, _: &Request) -> Result<Response, Error> {
+        render!("templates/not_found.html", 404)
+    }
+}
+
 #[tokio::main]
 async fn main() -> Result<(), http::Error> {
     Logger::init();
@@ -24,6 +34,7 @@ async fn main() -> Result<(), http::Error> {
         route!("/blog/:page" => controllers::content::Content),
         route!("/articles" => controllers::articles::Articles),
         StaticFiles::serve("static")?,
+        NotFound::default().wildcard("/"),
     ])
     .launch("0.0.0.0:8000")
     .await
