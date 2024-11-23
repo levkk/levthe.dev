@@ -11,7 +11,7 @@ struct Index;
 #[async_trait]
 impl Controller for Index {
     async fn handle(&self, _: &Request) -> Result<Response, Error> {
-        Ok(Response::new().redirect("/articles/"))
+        Ok(Response::new().redirect("/blog"))
     }
 }
 
@@ -35,7 +35,7 @@ async fn main() -> Result<(), http::Error> {
     Server::new(vec![
         route!("/" => Index),
         route!("/blog/:page" => controllers::content::Content),
-        route!("/articles" => controllers::articles::Articles),
+        route!("/blog" => controllers::articles::Articles),
         StaticFiles::serve("static")?,
         NotFound::default().wildcard("/"),
     ])

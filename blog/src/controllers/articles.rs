@@ -9,6 +9,7 @@ impl Controller for Articles {
     async fn handle(&self, request: &Request) -> Result<Response, Error> {
         let mut directory = read_dir("blog").await?;
         let mut entries = vec![];
+
         while let Some(entry) = directory.next_entry().await? {
             let metadata = entry.metadata().await?;
             if metadata.is_dir() {
@@ -30,9 +31,9 @@ impl Controller for Articles {
 
         let mut path = request.path().path().to_owned();
         let canonical = if path.ends_with("/") {
+            path.pop();
             path
         } else {
-            path.push_str("/");
             path
         };
 

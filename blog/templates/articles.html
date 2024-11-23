@@ -4,7 +4,7 @@
     <ul>
         <% for article in articles %>
         <li>
-            <a href="/blog/<%= article %>/"><%= article.replace("-", " ").capitalize %></a>
+            <a href="/blog/<%= article %>"><%= article.replace("-", " ").capitalize %></a>
         </li>
         <% end %>
     </ul>

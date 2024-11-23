@@ -10,8 +10,8 @@ pub struct Content;
 
 #[async_trait]
 impl Controller for Content {
-    async fn handle(&self, req: &Request) -> Result<Response, Error> {
-        let page = req.parameter::<String>("page")?;
+    async fn handle(&self, request: &Request) -> Result<Response, Error> {
+        let page = request.parameter::<String>("page")?;
         if let Some(page) = page {
             let path = Path::new("blog").join(format!("{}.md", page));
 
@@ -24,8 +24,9 @@ impl Controller for Content {
             if let Ok(content) = read_to_string(path).await {
                 let arena = Arena::new();
                 let root = parse_document(&arena, &content, &options);
-                let mut title = "Lev's blog".to_string();
 
+                // Figure out the title from the first <h1>.
+                let mut title = "Lev's blog".to_string();
                 for node in root.descendants() {
                     if let NodeValue::Heading(heading) = node.data.borrow().value {
                         if heading.level == 1 {
@@ -41,10 +42,25 @@ impl Controller for Content {
                 let mut html = vec![];
                 let _ = format_html(root, &options, &mut html);
 
-                render!("templates/blog.html",
+                let mut path = request.path().path().to_owned();
+                let canonical = if path.ends_with("/") {
+                    path.pop();
+                    path
+                } else {
+                    path
+                };
+
+                let context = context!(
                     "page" => String::from_utf8_lossy(&html).to_string(),
                     "title" => title,
-                )
+                    "canonical" => canonical,
+                );
+
+                let template = Template::load("templates/blog.html")?.render(&context)?;
+
+                return Ok(Response::new()
+                    .html(template)
+                    .header("cache-control", "max-age=3600"));
             }
         }
 
