@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en-US" data-theme="dark">
+    <head>
+        <%= rwf_head() %>
+        <% if title %>
+        <title><%= title %></title>
+        <% end %>
+
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/a11y-dark.min.css">
+        <link rel="stylesheet" href="/static/style.css">
+
+        <% if canonical %>
+        <link rel="canonical" href="https://levthe.dev/blog<%- canonical %>">
+        <% end %>
+
+    </head>
+    <body>
+        <div class="container">
+            <nav>
+                <ul>
+                    <li>
+                        <a href="/articles/">Articles</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>

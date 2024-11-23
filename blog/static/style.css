@@ -1,0 +1,111 @@
+@font-face {
+    font-family: "Berkeley Mono";
+    src:
+        url("/static/fonts/BerkeleyMono-Regular.woff") format("woff"),
+        url("/static/fonts/BerkeleyMono-Regular.woff2") format("woff2");
+
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Berkeley Mono";
+    src:
+        url("/static/fonts/BerkeleyMono-Italic.woff") format("woff"),
+        url("/static/fonts/BerkeleyMono-Italic.woff2") format("woff2");
+
+    font-weight: normal;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "Berkeley Mono";
+    src:
+        url("/static/fonts/BerkeleyMono-Bold.woff") format("woff"),
+        url("/static/fonts/BerkeleyMono-Bold.woff2") format("woff2");
+
+    font-weight: bold;
+}
+
+@font-face {
+    font-family: "Berkeley Mono";
+    src:
+        url("/static/fonts/BerkeleyMono-BoldItalic.woff") format("woff"),
+        url("/static/fonts/BerkeleyMono-BoldItalic.woff2") format("woff2");
+
+    font-weight: bold;
+    font-style: italic;
+}
+
+html,
+body {
+    font-family: "Berkeley Mono", "Arial", "Helvetica", sans-serif;
+    background: #161718;
+    color: #d1cfcc;
+    font-size: 1rem;
+    margin-bottom: 50px;
+}
+
+.container {
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+}
+
+@media (min-width: 768px) {
+    .container {
+        width: 750px;
+    }
+}
+
+@media (min-width: 992px) {
+    .container {
+        width: 970px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .container {
+        width: 1170px;
+    }
+}
+
+img {
+    max-width: 100%;
+    margin: 0 auto;
+    display: block;
+}
+
+table tbody td {
+    padding: 2px 10px;
+}
+
+table thread td {
+    text-align: left;
+}
+
+a {
+    color: #8cb4ff;
+}
+
+nav ul {
+    display: flex;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    margin-bottom: 50px;
+    margin-top: 25px;
+}
+
+nav ul li {
+    margin: 0;
+}
+
+ul li {
+    margin: 10px 0;
+}
+
+code {
+    font-size: 0.95rem;
+}
