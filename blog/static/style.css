@@ -45,7 +45,9 @@ body {
     margin-bottom: 50px;
 }
 
-.container {
+.container,
+.container-fluid {
+    --bs-gutter-x: 1.5rem;
     --bs-gutter-y: 0;
     width: 100%;
     padding-right: calc(var(--bs-gutter-x) * 0.5);
@@ -55,31 +57,18 @@ body {
 }
 
 @media (min-width: 576px) {
-    .container {
-        --bs-gutter-x: 0.75rem;
-        max-width: 540px;
-    }
-
     a {
-        font-size: 1.5rem;
+        font-size: 1.6rem;
     }
 
     html,
     body {
-        font-size: 1.2rem;
+        font-size: 1.4rem;
     }
 }
 @media (min-width: 768px) {
-    .container {
-        max-width: 720px;
-        padding: 5px;
-    }
 }
 @media (min-width: 992px) {
-    .container {
-        max-width: 960px;
-    }
-
     a {
         font-size: 1rem;
     }
@@ -90,15 +79,8 @@ body {
     }
 }
 @media (min-width: 1200px) {
-    .container {
-        --bs-gutter-x: 1.5rem;
-        max-width: 1140px;
-    }
 }
 @media (min-width: 1400px) {
-    .container {
-        max-width: 1320px;
-    }
 }
 
 img {
