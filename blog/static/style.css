@@ -42,12 +42,10 @@ body {
     font-family: "Berkeley Mono", "Arial", "Helvetica", sans-serif;
     background: #161718;
     color: #d1cfcc;
-    font-size: 1rem;
     margin-bottom: 50px;
 }
 
 .container {
-    --bs-gutter-x: 1.5rem;
     --bs-gutter-y: 0;
     width: 100%;
     padding-right: calc(var(--bs-gutter-x) * 0.5);
@@ -58,21 +56,42 @@ body {
 
 @media (min-width: 576px) {
     .container {
+        --bs-gutter-x: 0.75rem;
         max-width: 540px;
+    }
+
+    a {
+        font-size: 1.5rem;
+    }
+
+    html,
+    body {
+        font-size: 1.2rem;
     }
 }
 @media (min-width: 768px) {
     .container {
         max-width: 720px;
+        padding: 5px;
     }
 }
 @media (min-width: 992px) {
     .container {
         max-width: 960px;
     }
+
+    a {
+        font-size: 1rem;
+    }
+
+    html,
+    body {
+        font-size: 1rem;
+    }
 }
 @media (min-width: 1200px) {
     .container {
+        --bs-gutter-x: 1.5rem;
         max-width: 1140px;
     }
 }
