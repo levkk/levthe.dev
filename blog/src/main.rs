@@ -1,7 +1,9 @@
 mod controllers;
 mod models;
 
-use rwf::controller::StaticFiles;
+use std::env::var;
+
+use rwf::controller::{BasicAuth, StaticFiles};
 use rwf::http::{self, Server};
 use rwf::prelude::*;
 
@@ -34,14 +36,31 @@ impl Controller for NotFound {
 async fn main() -> Result<(), http::Error> {
     Logger::init();
 
-    Server::new(vec![
+    rwf_admin::install()?;
+
+    Migrations::migrate().await?;
+
+    let mut routes = vec![
         route!("/" => Index),
         route!("/blog/:page" => controllers::content::Content),
         route!("/blog" => controllers::articles::Articles),
         route!("/rss.xml" => controllers::rss::Rss),
         StaticFiles::serve("static")?,
         NotFound::default().wildcard("/"),
-    ])
-    .launch("0.0.0.0:8001")
-    .await
+    ];
+
+    let admin_engine = rwf_admin::engine().auth(
+        BasicAuth {
+            user: var("BLOG_ADMIN_USER").unwrap_or(String::from("admin")),
+            password: var("BLOG_ADMIN_PASSWORD").unwrap_or(String::from("admin")),
+        }
+        .handler(),
+    );
+
+    routes.extend(vec![
+        engine!("/admin" => admin_engine),
+        rwf_admin::static_files()?,
+    ]);
+
+    Server::new(routes).launch("0.0.0.0:8001").await
 }

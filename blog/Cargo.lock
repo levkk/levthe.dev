@@ -223,6 +223,7 @@ version = "0.1.0"
 dependencies = [
  "comrak",
  "rwf",
+ "rwf-admin",
  "tokio",
 ]
 
@@ -1359,6 +1360,21 @@ dependencies = [
  "toml",
  "tracing",
  "tracing-subscriber",
+ "uuid",
+]
+
+[[package]]
+name = "rwf-admin"
+version = "0.1.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f0f7f88b559035e01edd98ad1f9e13abaaa7b4dfcb4bd91cb1691124082b4398"
+dependencies = [
+ "once_cell",
+ "rwf",
+ "serde",
+ "serde_json",
+ "time",
+ "tokio",
  "uuid",
 ]
 

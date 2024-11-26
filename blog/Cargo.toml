@@ -7,3 +7,4 @@ edition = "2021"
 rwf = "0.1.12"
 tokio = { version = "1", features = ["full"] }
 comrak = "*"
+rwf-admin = "0.1.12"
