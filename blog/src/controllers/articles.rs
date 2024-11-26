@@ -4,9 +4,8 @@ use tokio::fs::read_dir;
 #[derive(Default)]
 pub struct Articles;
 
-#[async_trait]
-impl Controller for Articles {
-    async fn handle(&self, request: &Request) -> Result<Response, Error> {
+impl Articles {
+    pub async fn articles() -> Result<Vec<String>, Error> {
         let mut directory = read_dir("blog").await?;
         let mut entries = vec![];
 
@@ -29,6 +28,15 @@ impl Controller for Articles {
 
         entries.sort();
 
+        Ok(entries)
+    }
+}
+
+#[async_trait]
+impl Controller for Articles {
+    async fn handle(&self, request: &Request) -> Result<Response, Error> {
+        let entries = Self::articles().await?;
+
         let mut path = request.path().path().to_owned();
         let canonical = if path.ends_with("/") {
             path.pop();
@@ -37,7 +45,8 @@ impl Controller for Articles {
             path
         };
 
-        render!("templates/articles.html",
+        render!(request,
+            "templates/articles.html",
             "title" => "Articles | Lev's blog",
             "articles" => entries,
             "canonical" => canonical,

@@ -20,8 +20,10 @@ struct NotFound;
 
 #[async_trait]
 impl Controller for NotFound {
-    async fn handle(&self, _: &Request) -> Result<Response, Error> {
-        render!("templates/not_found.html",
+    async fn handle(&self, request: &Request) -> Result<Response, Error> {
+        render!(
+            request,
+            "templates/not_found.html",
             "title" => "Page not found | Lev's blog",
             404
         )
@@ -36,6 +38,7 @@ async fn main() -> Result<(), http::Error> {
         route!("/" => Index),
         route!("/blog/:page" => controllers::content::Content),
         route!("/blog" => controllers::articles::Articles),
+        route!("/rss.xml" => controllers::rss::Rss),
         StaticFiles::serve("static")?,
         NotFound::default().wildcard("/"),
     ])

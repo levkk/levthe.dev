@@ -1331,9 +1331,9 @@ checksum = "0e819f2bc632f285be6d7cd36e25940d45b2391dd6d9b939e79de557f7014248"
 
 [[package]]
 name = "rwf"
-version = "0.1.11"
+version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "52504316bd9c2ce67fda38bcd08b03a28fdd16407003b43b7f0d92dff76de61c"
+checksum = "4d1f1bada2be043bc7d339ebd10f770f9c0acc7a0e9eea04a6f960d043d1a582"
 dependencies = [
  "aes",
  "aes-gcm-siv",
@@ -1364,9 +1364,9 @@ dependencies = [
 
 [[package]]
 name = "rwf-macros"
-version = "0.1.11"
+version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "89f9b81d57e4ce902e245ff4e2758b5b259fcc79aea1144af32c188399187af1"
+checksum = "23881a122c2c6583ed2a41df5b2f2ac489130416a0f2eeb6b22f0cf06d8b6da6"
 dependencies = [
  "pluralizer",
  "proc-macro2",

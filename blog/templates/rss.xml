@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+    <channel>
+        <title>Lev's blog</title>
+        <managingEditor>lev.kokotov@gmail.com (Lev Kokotov)</managingEditor>
+        <link>https://levthe.dev</link>
+        <language>en</language>
+        <lastBuildDate><%= date %></lastBuildDate>
+        <pubDate><%= date %></pubDate>
+
+        <% for article in articles %>
+        <item>
+            <title><%= article.replace("-", " ").capitalize %></title>
+            <link>https://levthe.dev/blog/<%= article %>/</link>
+        </item>
+        <% end %>
+    </channel>
+</rss>
