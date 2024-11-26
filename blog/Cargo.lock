@@ -1332,8 +1332,8 @@ checksum = "0e819f2bc632f285be6d7cd36e25940d45b2391dd6d9b939e79de557f7014248"
 
 [[package]]
 name = "rwf"
-version = "0.1.13"
-source = "git+https://github.com/levkk/rwf.git?rev=078a9ec#078a9ecea4bd6315de94e6f8aa50a0c99c8abb00"
+version = "0.1.14"
+source = "git+https://github.com/levkk/rwf.git?rev=aa45d2a#aa45d2af7232b923a6e2090bbc6fc4eabceacc36"
 dependencies = [
  "aes",
  "aes-gcm-siv",
@@ -1365,7 +1365,7 @@ dependencies = [
 [[package]]
 name = "rwf-admin"
 version = "0.1.12"
-source = "git+https://github.com/levkk/rwf.git?rev=078a9ec#078a9ecea4bd6315de94e6f8aa50a0c99c8abb00"
+source = "git+https://github.com/levkk/rwf.git?rev=aa45d2a#aa45d2af7232b923a6e2090bbc6fc4eabceacc36"
 dependencies = [
  "once_cell",
  "rwf",
@@ -1379,7 +1379,7 @@ dependencies = [
 [[package]]
 name = "rwf-macros"
 version = "0.1.12"
-source = "git+https://github.com/levkk/rwf.git?rev=078a9ec#078a9ecea4bd6315de94e6f8aa50a0c99c8abb00"
+source = "git+https://github.com/levkk/rwf.git?rev=aa45d2a#aa45d2af7232b923a6e2090bbc6fc4eabceacc36"
 dependencies = [
  "pluralizer",
  "proc-macro2",

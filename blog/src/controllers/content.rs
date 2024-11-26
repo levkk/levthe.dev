@@ -61,8 +61,7 @@ impl Controller for Content {
 
                 return Ok(Response::new()
                     .html(template)
-                    .header("cache-control", "max-age=3600")
-                    .header("cache", "public"));
+                    .header("cache-control", "public, max-age=60"));
             }
         }
 
