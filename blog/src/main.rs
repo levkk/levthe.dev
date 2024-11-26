@@ -3,7 +3,7 @@ mod models;
 
 use std::env::var;
 
-use rwf::controller::{BasicAuth, StaticFiles};
+use rwf::controller::{BasicAuth, StaticFiles, TurboStream};
 use rwf::http::{self, Server};
 use rwf::prelude::*;
 
@@ -45,6 +45,7 @@ async fn main() -> Result<(), http::Error> {
         route!("/blog/:page" => controllers::content::Content),
         route!("/blog" => controllers::articles::Articles),
         route!("/rss.xml" => controllers::rss::Rss),
+        route!("/turbo-stream" => TurboStream),
         StaticFiles::serve("static")?,
         NotFound::default().wildcard("/"),
     ];
