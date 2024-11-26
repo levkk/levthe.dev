@@ -54,6 +54,7 @@ impl Controller for Content {
                     "page" => String::from_utf8_lossy(&html).to_string(),
                     "title" => title,
                     "canonical" => canonical,
+                    "request" => request.clone(),
                 );
 
                 let template = Template::load("templates/blog.html")?.render(&context)?;
