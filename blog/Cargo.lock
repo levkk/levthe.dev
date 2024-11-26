@@ -1333,8 +1333,7 @@ checksum = "0e819f2bc632f285be6d7cd36e25940d45b2391dd6d9b939e79de557f7014248"
 [[package]]
 name = "rwf"
 version = "0.1.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4d1f1bada2be043bc7d339ebd10f770f9c0acc7a0e9eea04a6f960d043d1a582"
+source = "git+https://github.com/levkk/rwf.git?rev=869da6172b93f5345059993f30fcfb09f0c4e5fa#869da6172b93f5345059993f30fcfb09f0c4e5fa"
 dependencies = [
  "aes",
  "aes-gcm-siv",
@@ -1366,8 +1365,7 @@ dependencies = [
 [[package]]
 name = "rwf-admin"
 version = "0.1.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f0f7f88b559035e01edd98ad1f9e13abaaa7b4dfcb4bd91cb1691124082b4398"
+source = "git+https://github.com/levkk/rwf.git?rev=869da6172b93f5345059993f30fcfb09f0c4e5fa#869da6172b93f5345059993f30fcfb09f0c4e5fa"
 dependencies = [
  "once_cell",
  "rwf",
@@ -1381,8 +1379,7 @@ dependencies = [
 [[package]]
 name = "rwf-macros"
 version = "0.1.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "23881a122c2c6583ed2a41df5b2f2ac489130416a0f2eeb6b22f0cf06d8b6da6"
+source = "git+https://github.com/levkk/rwf.git?rev=869da6172b93f5345059993f30fcfb09f0c4e5fa#869da6172b93f5345059993f30fcfb09f0c4e5fa"
 dependencies = [
  "pluralizer",
  "proc-macro2",
