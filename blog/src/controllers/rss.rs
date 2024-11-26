@@ -16,6 +16,6 @@ impl Controller for Rss {
 
         Ok(Response::new()
             .html(template.render(&ctx)?)
-            .header("Content-Type", "text/xml"))
+            .header("Content-Type", "application/rss+xml"))
     }
 }
