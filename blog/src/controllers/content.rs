@@ -3,6 +3,7 @@ use comrak::{format_html, parse_document, Arena, Options};
 use rwf::prelude::*;
 
 use std::path::Path;
+use time::{macros::format_description, Date};
 use tokio::fs::read_to_string;
 
 #[derive(Default)]
@@ -27,12 +28,38 @@ impl Controller for Content {
 
                 // Figure out the title from the first <h1>.
                 let mut title = "Lev's blog".to_string();
+                let mut found_date = false;
+                let date_format = format_description!("[year]-[month]-[day]");
                 for node in root.descendants() {
+                    if found_date && title != "Lev's blog" {
+                        break;
+                    }
+
                     if let NodeValue::Heading(heading) = node.data.borrow().value {
                         if heading.level == 1 {
-                            if let Some(sibling) = node.first_child() {
-                                if let NodeValue::Text(ref text) = sibling.data.borrow().value {
+                            if let Some(child) = node.first_child() {
+                                if let NodeValue::Text(ref text) = child.data.borrow().value {
                                     title = format!("{} | Lev's blog", text.clone());
+                                }
+                            }
+                        }
+                    }
+
+                    if let NodeValue::Paragraph = node.data.borrow().value {
+                        if let Some(child) = node.first_child() {
+                            if let NodeValue::Text(ref mut text) = child.data.borrow_mut().value {
+                                if !found_date {
+                                    if let Ok(date) = Date::parse(text, date_format) {
+                                        text.clear();
+                                        text.push_str(&format!(
+                                            "{} {}, {}",
+                                            date.month(),
+                                            date.day(),
+                                            date.year()
+                                        ));
+                                    }
+
+                                    found_date = true;
                                 }
                             }
                         }

@@ -1,5 +1,5 @@
 
-July 7, 2024
+2024-07-07
 
 # My first post
 

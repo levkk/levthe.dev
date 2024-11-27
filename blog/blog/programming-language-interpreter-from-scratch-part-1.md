@@ -1,5 +1,5 @@
 
-Aug 8, 2024
+2024-08-08
 
 # Programming language interpreter from scratch: Part 1
 

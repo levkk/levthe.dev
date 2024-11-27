@@ -10,8 +10,9 @@
 
         <% for article in articles %>
         <item>
-            <title><%= article.replace("-", " ").capitalize %></title>
-            <link>https://levthe.dev/blog/<%= article %>/</link>
+            <title><%= article.path.replace("-", " ").capitalize %></title>
+            <pubDate><%= article.pub_date %></pubDate>
+            <link>https://levthe.dev/blog/<%= article.path %>/</link>
         </item>
         <% end %>
     </channel>
