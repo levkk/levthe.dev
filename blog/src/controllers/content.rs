@@ -1,5 +1,5 @@
 use comrak::nodes::NodeValue;
-use comrak::{format_html, parse_document, Arena, Options};
+use comrak::{format_html, parse_document, Arena, Options, RenderOptions};
 use rwf::prelude::*;
 
 use std::path::Path;
@@ -21,6 +21,7 @@ impl Controller for Content {
             options.extension.autolink = true;
             options.extension.footnotes = true;
             options.extension.greentext = true;
+            options.render.unsafe_ = true;
 
             if let Ok(content) = read_to_string(path).await {
                 let arena = Arena::new();

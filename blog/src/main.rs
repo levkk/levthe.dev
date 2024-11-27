@@ -46,7 +46,7 @@ async fn main() -> Result<(), http::Error> {
         route!("/blog" => controllers::articles::Articles),
         route!("/rss.xml" => controllers::rss::Rss),
         route!("/turbo-stream" => TurboStream),
-        StaticFiles::cached("static", Duration::minutes(1))?,
+        StaticFiles::serve("static")?,
         NotFound::default().wildcard("/"),
     ];
 
