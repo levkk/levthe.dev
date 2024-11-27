@@ -1,5 +1,5 @@
 use comrak::nodes::NodeValue;
-use comrak::{format_html, parse_document, Arena, Options, RenderOptions};
+use comrak::{format_html, parse_document, Arena, Options};
 use rwf::prelude::*;
 
 use std::path::Path;
