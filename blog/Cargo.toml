@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-rwf = { git = "https://github.com/levkk/rwf.git", rev = "aa45d2a" }
+rwf = { git = "https://github.com/levkk/rwf.git", rev = "d30531511777cf606dd8c87ecd17d470e335fb4e" }
 tokio = { version = "1", features = ["full"] }
 comrak = "*"
-rwf-admin = { git = "https://github.com/levkk/rwf.git", rev = "aa45d2a" }
+rwf-admin = { git = "https://github.com/levkk/rwf.git", rev = "d30531511777cf606dd8c87ecd17d470e335fb4e" }
 time = "0.3"

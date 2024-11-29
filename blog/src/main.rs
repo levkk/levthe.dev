@@ -63,5 +63,5 @@ async fn main() -> Result<(), http::Error> {
         rwf_admin::static_files()?,
     ]);
 
-    Server::new(routes).launch("0.0.0.0:8001").await
+    Server::new(routes).launch().await
 }
